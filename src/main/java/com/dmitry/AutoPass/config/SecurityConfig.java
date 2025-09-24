@@ -1,5 +1,6 @@
 package com.dmitry.AutoPass.config;
 
+import com.dmitry.AutoPass.jwt.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,7 +13,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import com.example.auth.security.JwtAuthFilter;
+import com.dmitry.AutoPass.jwt.JwtAuthFilter;
 
 @Configuration
 public class SecurityConfig {
@@ -30,7 +31,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthFilter jwt) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,  JwtAuthFilter jw) throws Exception {
         http.csrf(csrf -> csrf.disable());
         http.cors(Customizer.withDefaults());
         http.authorizeHttpRequests(reg -> reg
@@ -39,7 +40,7 @@ public class SecurityConfig {
                         "/api/v1/auth/password/forgot", "/api/v1/auth/password/reset").permitAll()
                 .anyRequest().authenticated()
         );
-        http.addFilterBefore(jwt, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jw, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
