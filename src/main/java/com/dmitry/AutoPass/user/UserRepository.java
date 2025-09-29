@@ -1,4 +1,11 @@
 package com.dmitry.AutoPass.user;
 
-public class UserRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+import java.util.UUID;
+
+public interface UserRepository extends JpaRepository<User, UUID> {
+    boolean existsAllByEmail(String email);
+    Optional<User> findByEmail(String email);
 }

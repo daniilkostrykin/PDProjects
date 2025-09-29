@@ -24,4 +24,7 @@ app:
     refresh-cookies-name: refresh
     refresh-cookies-path: /api/v1/auth
     cookies-samesite: Strict
+  jwt:
+    secret: super-secret-32-bytes-minimum-string-123456
+
 

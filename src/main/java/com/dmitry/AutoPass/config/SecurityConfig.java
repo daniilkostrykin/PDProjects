@@ -14,33 +14,35 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import com.dmitry.AutoPass.jwt.JwtAuthFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+
 
 @Configuration
 public class SecurityConfig {
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12);
+    private final JwtAuthFilter jwtAuthFilter;
+
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(UserDetailsService uds, BCryptPasswordEncoder enc) {
-        var provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(uds);
-        provider.setPasswordEncoder(enc);
-        return new ProviderManager(provider);
-    }
+    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.csrf(csrf -> csrf.disable());            // ← иначе POST из браузера получит 403
+        http.cors(Customizer.withDefaults());         // ← включаем CORS
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http,  JwtAuthFilter jw) throws Exception {
-        http.csrf(csrf -> csrf.disable());
-        http.cors(Customizer.withDefaults());
-        http.authorizeHttpRequests(reg -> reg
-                .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login",
-                        "/api/v1/auth/refresh", "/api/v1/auth/verify-email",
-                        "/api/v1/auth/password/forgot", "/api/v1/auth/password/reset").permitAll()
+        http.authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // ← Preflight
+                .requestMatchers(HttpMethod.POST,
+                        "/api/v1/auth/register",
+                        "/api/v1/auth/login"
+                ).permitAll()
                 .anyRequest().authenticated()
         );
-        http.addFilterBefore(jw, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+
+        http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
+
+
