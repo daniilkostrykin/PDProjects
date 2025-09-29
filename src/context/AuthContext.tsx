@@ -1,80 +1,54 @@
 // src/context/AuthContext.tsx
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import type { ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import AuthService from '../services/auth.service';
 import type { User } from '../types/auth';
 
-// Определяем интерфейс для AuthContext
-interface AuthContextType {
+type AuthCtx = {
   user: User | null;
   isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<void>;
-  logout: () => void;
   isLoading: boolean;
-}
+  hydrated: boolean;                   // ← добавили
+  login: (u: string, p: string) => Promise<void>;
+  logout: () => void;
+};
 
-// Создаем контекст с дефолтными значениями
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const Ctx = createContext<AuthCtx>({} as any);
 
-// Провайдер контекста
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Для начальной проверки токена
+  const [isLoading, setIsLoading] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    // При загрузке приложения проверяем, есть ли уже токен/пользователь в localStorage
-    const storedUser = AuthService.getAuthUser();
-    const token = AuthService.getToken();
-
-    if (storedUser && token) {
-      setUser(storedUser);
-      setIsAuthenticated(true);
-    }
-    setIsLoading(false); // Загрузка завершена
+    // Гидратация из localStorage один раз при монтировании
+    const u = AuthService.getAuthUser();
+    setUser(u);
+    setHydrated(true);
   }, []);
 
-  const loginHandler = async (username: string, password: string) => {
+  const login = async (username: string, password: string) => {
     setIsLoading(true);
     try {
-      const authResponse = await AuthService.login(username, password);
-      setUser(authResponse.user);
-      setIsAuthenticated(true);
-      // После успешного логина можно сделать редирект, например:
-      // navigate('/'); // (если используете useNavigate)
-    } catch (error) {
-      console.error('Login failed in context:', error);
-      setIsAuthenticated(false);
-      setUser(null);
-      throw error; // Перебрасываем ошибку дальше
+      const { user } = await AuthService.login(username, password);
+      setUser(user);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logoutHandler = () => {
+  const logout = () => {
     AuthService.logout();
     setUser(null);
-    setIsAuthenticated(false);
-    // navigate('/login'); // (если используете useNavigate)
+    // опционально: window.location.href = '/login';
   };
 
-  const value = {
-    user,
-    isAuthenticated,
-    login: loginHandler,
-    logout: logoutHandler,
-    isLoading,
-  };
+  const isAuthenticated = !!user && !!AuthService.getToken(); // токен обязателен
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <Ctx.Provider value={{ user, isAuthenticated, isLoading, hydrated, login, logout }}>
+      {children}
+    </Ctx.Provider>
+  );
 };
 
-// Пользовательский хук для удобного доступа к контексту
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+export const useAuth = () => useContext(Ctx);

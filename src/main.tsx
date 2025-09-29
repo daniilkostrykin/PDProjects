@@ -2,7 +2,7 @@
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
-import './index.css'; // <-- Эта строка должна быть
+import './index.css'; // <-- Эта строка долтьжна быть
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
