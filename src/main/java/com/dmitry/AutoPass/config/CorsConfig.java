@@ -10,14 +10,21 @@ import java.util.List;
 
 
 
+// com.dmitry.AutoPass.config.CorsConfig
 @Configuration
 public class CorsConfig {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
-        cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
-        cfg.setAllowedHeaders(List.of("*"));
+
+        // ✅ Разрешаем твой дев-сервер (5174)
+        cfg.setAllowedOrigins(java.util.List.of(
+                "http://localhost:5173",
+                "http://localhost:5174"   // <— добавь это
+        ));
+
+        cfg.setAllowedMethods(java.util.List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
+        cfg.setAllowedHeaders(java.util.List.of("*"));
         cfg.setAllowCredentials(true);
         cfg.setMaxAge(3600L);
 
@@ -26,4 +33,5 @@ public class CorsConfig {
         return new CorsFilter(source);
     }
 }
+
 
