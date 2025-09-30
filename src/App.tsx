@@ -1,75 +1,63 @@
-﻿// src/App.tsx
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { ReactNode } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import Header from '@/component/layout/Header';
+import Sidebar from '@/component/layout/Sidebar';
+import DashboardPage from '@/pages/DashboardPage/DashboardPage';
+import EmployeeListPage from '@/pages/Employees/EmployeeListPage';
+import PassListPage from '@/pages/Passes/PassListPage';
+import NewPassRequestPage from '@/pages/Passes/NewPassRequestPage';
+import MyRequestsPage from '@/pages/Passes/MyRequestsPage';
+import AccessLogPage from '@/pages/Reports/AccessLogPage';
+import ApprovalQueuePage from '@/pages/Admin/ApprovalQueuePage';
+import ApprovedListPage from '@/pages/Admin/ApprovedListPage';
+import LoginPage from '@/pages/Auth/LoginPage';
+import RegisterPage from '@/pages/Auth/RegisterPage';
 
-import LoginPage from './pages/Auth/LoginPage';
-import RegisterPage from './pages/Auth/RegisterPage'; // ← ДОБАВИЛИ
-import DashboardPage from './pages/Dashboard/DashboardPage';
-import EmployeeListPage from './pages/Employees/EmployeeListPage';
-import PassListPage from './pages/Passes/PassListPage';
-import AccessLogPage from './pages/Reports/AccessLogPage';
 
-import Header from './components/layout/Header';
-import Sidebar from './components/layout/Sidebar';
-
-const isAuthMockEnabled =
-  ((import.meta.env.VITE_AUTH_MOCK as string | undefined) ??
-    (import.meta.env.MODE === 'development' ? 'true' : 'false')) === 'true';
-
-const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="flex h-screen bg-gray-100">
-    <Sidebar />
-    <div className="flex flex-col flex-1 overflow-hidden">
-      <Header />
-      <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-200 p-4">
-        {children}
-      </main>
-    </div>
-  </div>
-);
-
-const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isLoading, hydrated } = useAuth();
-
-  // В режиме моков — впускаем всегда и рисуем приложение
-  if (isAuthMockEnabled) {
-    return <AppLayout>{children}</AppLayout>;
-  }
-
-  // Ждём, пока контекст гидратируется из localStorage
-  if (!hydrated || isLoading) {
-    return <div className="flex justify-center items-center h-screen">Загрузка...</div>;
-  }
-
-  // Если не авторизован — отправляем на логин
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  // Авторизован — показываем приложение
-  return <AppLayout>{children}</AppLayout>;
-};
-
-function App() {
-  return (
-    <AuthProvider>
-      <Routes>
-        {/* Публичные страницы */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} /> {/* ← ДОБАВИЛИ */}
-
-        {/* Приватные страницы */}
-        <Route path="/" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
-        <Route path="/employees" element={<PrivateRoute><EmployeeListPage /></PrivateRoute>} />
-        <Route path="/passes" element={<PrivateRoute><PassListPage /></PrivateRoute>} />
-        <Route path="/logs" element={<PrivateRoute><AccessLogPage /></PrivateRoute>} />
-
-        {/* Фолбек */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </AuthProvider>
-  );
+function PrivateRoute({ children }: { children: ReactNode }) {
+const { isAuthenticated } = useAuth();
+return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
-export default App;
+
+function AdminRoute({ children }: { children: ReactNode }) {
+const { isAuthenticated, isAdmin } = useAuth();
+if (!isAuthenticated) return <Navigate to="/login" replace />;
+return isAdmin ? <>{children}</> : <Navigate to="/" replace />;
+}
+
+
+export default function App() {
+const { isAuthenticated } = useAuth();
+const layout = (
+<div className="app">
+<Sidebar />
+<div>
+<Header />
+<div style={{padding:16}}>
+<Routes>
+<Route path="/" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
+<Route path="/employees" element={<PrivateRoute><EmployeeListPage /></PrivateRoute>} />
+<Route path="/passes" element={<PrivateRoute><PassListPage /></PrivateRoute>} />
+<Route path="/passes/new" element={<PrivateRoute><NewPassRequestPage /></PrivateRoute>} />
+<Route path="/passes/my" element={<PrivateRoute><MyRequestsPage /></PrivateRoute>} />
+<Route path="/reports/access-log" element={<PrivateRoute><AccessLogPage /></PrivateRoute>} />
+<Route path="/admin/approval" element={<AdminRoute><ApprovalQueuePage /></AdminRoute>} />
+<Route path="/admin/approved" element={<AdminRoute><ApprovedListPage /></AdminRoute>} />
+<Route path="*" element={<Navigate to={isAuthenticated ? '/' : '/login'} replace />} />
+</Routes>
+</div>
+</div>
+</div>
+);
+
+
+return (
+<Routes>
+<Route path="/login" element={<LoginPage />} />
+<Route path="/register" element={<RegisterPage />} />
+<Route path="/*" element={layout} />
+</Routes>
+);
+}

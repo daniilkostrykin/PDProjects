@@ -1,54 +1,63 @@
-// src/context/AuthContext.tsx
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import AuthService from '../services/auth.service';
-import type { User } from '../types/auth';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import AuthService, { AuthUser, LoginDto, RegisterDto } from '@/services/auth.service';
 
-type AuthCtx = {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  hydrated: boolean;                   // ← добавили
-  login: (u: string, p: string) => Promise<void>;
-  logout: () => void;
+
+export type AuthContextValue = {
+user: AuthUser | null;
+isAuthenticated: boolean;
+isAdmin: boolean;
+login: (dto: LoginDto) => Promise<void>;
+register: (dto: RegisterDto) => Promise<void>;
+logout: () => void;
+setAuth: () => void;
 };
 
-const Ctx = createContext<AuthCtx>({} as any);
 
-export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
+export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-  useEffect(() => {
-    // Гидратация из localStorage один раз при монтировании
-    const u = AuthService.getAuthUser();
-    setUser(u);
-    setHydrated(true);
-  }, []);
 
-  const login = async (username: string, password: string) => {
-    setIsLoading(true);
-    try {
-      const { user } = await AuthService.login(username, password);
-      setUser(user);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
+const [user, setUser] = useState<AuthUser | null>(AuthService.getCurrentUser());
+const [booting, setBooting] = useState(true);
 
-  const logout = () => {
-    AuthService.logout();
-    setUser(null);
-    // опционально: window.location.href = '/login';
-  };
 
-  const isAuthenticated = !!user && !!AuthService.getToken(); // токен обязателен
+const setAuth = () => setUser(AuthService.getCurrentUser());
 
-  return (
-    <Ctx.Provider value={{ user, isAuthenticated, isLoading, hydrated, login, logout }}>
-      {children}
-    </Ctx.Provider>
-  );
+
+const login = async (dto: LoginDto) => {
+const res = await AuthService.login(dto);
+setUser(res.user);
 };
 
-export const useAuth = () => useContext(Ctx);
+
+const register = async (dto: RegisterDto) => {
+await AuthService.register(dto);
+};
+
+
+const logout = () => {
+AuthService.logout();
+setUser(null);
+};
+
+
+useEffect(() => {
+setAuth();
+setBooting(false);
+}, []);
+
+
+const value = useMemo<AuthContextValue>(() => ({
+user,
+isAuthenticated: !!user,
+isAdmin: !!user?.roles?.includes('ADMIN'),
+login,
+register,
+logout,
+setAuth,
+}), [user]);
+
+
+if (booting) return <div className="container">Загрузка…</div>;
+return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};

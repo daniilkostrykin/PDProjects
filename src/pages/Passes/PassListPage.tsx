@@ -1,12 +1,29 @@
-﻿import React from 'react';
+import { useEffect, useState } from 'react';
+import { PassRequest } from '@/types/pass-request';
+import { PassRequestService } from '@/services/pass-request.service';
 
-const PassListPage: React.FC = () => {
-  return (
-    <div className="p-4">
-      <h1 className="text-3xl font-bold mb-4">PassList Page (Placeholder)</h1>
-      <p>Content for the PassList page will go here.</p>
-    </div>
-  );
-};
 
-export default PassListPage;
+export default function PassListPage() {
+const [items, setItems] = useState<PassRequest[]>([]);
+
+
+useEffect(() => {
+PassRequestService.list().then(setItems).catch(console.error);
+}, []);
+
+
+return (
+<div className="container">
+<h2>Пропуска</h2>
+<div className="card">
+{items.length === 0 ? 'Пока пусто' : (
+<ul>
+{items.map(p => (
+<li key={p.id}>{p.employeeName} — {p.vehicleNumber} — {p.status}</li>
+))}
+</ul>
+)}
+</div>
+</div>
+);
+}
