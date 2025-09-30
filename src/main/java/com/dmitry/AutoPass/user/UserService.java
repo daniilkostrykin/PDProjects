@@ -26,6 +26,7 @@ public class UserService {
         u.setEmail(email);
         u.setFullName(req.fullName().trim());
         u.setPasswordHash(encoder.encode(req.password()));
+        u.setRole(Role.USER);
         return repo.save(u);
     }
 

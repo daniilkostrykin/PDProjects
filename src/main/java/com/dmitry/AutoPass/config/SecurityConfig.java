@@ -32,11 +32,12 @@ public class SecurityConfig {
         http.cors(Customizer.withDefaults());         // ← включаем CORS
 
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // ← Preflight
-                .requestMatchers(HttpMethod.POST,
-                        "/api/v1/auth/register",
-                        "/api/v1/auth/login"
-                ).permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login").permitAll()
+                // Пример: админский раздел
+                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                // Пример: пользовательский раздел
+                .requestMatchers("/api/v1/user/**").hasAnyRole("USER","ADMIN")
                 .anyRequest().authenticated()
         );
 
