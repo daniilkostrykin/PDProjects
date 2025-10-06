@@ -1,4 +1,6 @@
 package com.dmitry.AutoPass.auth.dto;
 
-public class ForgotPasswordRequest {
-}
+import lombok.Data;
+
+@Data
+public class ForgotPasswordRequest { private String email; }

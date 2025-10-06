@@ -2,42 +2,45 @@ package com.dmitry.AutoPass.jwt;
 
 import com.dmitry.AutoPass.user.User;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class JwtService {
 
-    @Value("${app.jwt.secret}")
+    @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${app.jwt.ttlMinutes:60}")
-    private long ttlMinutes;
+    @Value("${jwt.access-exp-minutes:15}")
+    private long accessExpMinutes;
 
-    private Key key() {
-        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-    }
-
-    public String generate(User user) {
+    public String generateAccessToken(User user) {
+        var key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         Instant now = Instant.now();
+        Instant exp = now.plusSeconds(accessExpMinutes * 60);
+
+        String roles = user.getRoles() == null ? "" :
+                user.getRoles().stream().collect(Collectors.joining(","));
+
         return Jwts.builder()
-                .setSubject(String.valueOf(user.getId()))
-                .claim("email", user.getEmail())
-                .claim("roles", List.of(user.getRole().name()))
+                .setSubject(user.getUsername())
+                .claim("uid", user.getId())
+                .claim("roles", roles)
                 .setIssuedAt(Date.from(now))
-                .setExpiration(Date.from(now.plus(ttlMinutes, ChronoUnit.MINUTES)))
-                .signWith(key(), SignatureAlgorithm.HS256)
+                .setExpiration(Date.from(exp))
+                .signWith(key)
                 .compact();
     }
 
-    public Key getSigningKey() { return key(); }
+    public String getSubject(String token) {
+        var key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        return Jwts.parserBuilder().setSigningKey(key).build()
+                .parseClaimsJws(token).getBody().getSubject();
+    }
 }

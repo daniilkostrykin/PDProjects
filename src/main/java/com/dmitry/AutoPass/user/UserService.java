@@ -1,42 +1,11 @@
 package com.dmitry.AutoPass.user;
 
-import com.dmitry.AutoPass.auth.dto.RegisterRequest;
-import jakarta.transaction.Transactional;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserRepository repo;
-    private final PasswordEncoder encoder;
-
-    public UserService(UserRepository repo, PasswordEncoder encoder) {
-        this.repo = repo;
-        this.encoder = encoder;
-    }
-
-    @Transactional
-    public User register(RegisterRequest req){
-        String email = req.email().toLowerCase().trim();
-        if (repo.existsByEmail(email)) {
-            throw new DataIntegrityViolationException("Email already registered");
-        }
-        User u = new User();
-        u.setEmail(email);
-        u.setFullName(req.fullName().trim());
-        u.setPasswordHash(encoder.encode(req.password()));
-        u.setRole(Role.USER);
-        return repo.save(u);
-    }
-
-    public Optional<User> findByEmail(String email){
-        return repo.findByEmail(email.toLowerCase().trim());
-    }
-
-    public boolean matches(String raw, String hash){
-        return encoder.matches(raw, hash);
-    }
+    // добавишь доменные методы при необходимости
 }

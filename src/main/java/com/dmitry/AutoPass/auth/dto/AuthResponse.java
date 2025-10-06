@@ -1,3 +1,10 @@
 package com.dmitry.AutoPass.auth.dto;
 
-public record AuthResponse(String lwtToken, UserResponse user) {}
+import lombok.*;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class AuthResponse {
+    private String accessToken;
+}

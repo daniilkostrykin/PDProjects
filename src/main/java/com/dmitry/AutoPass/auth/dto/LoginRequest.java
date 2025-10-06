@@ -1,6 +1,9 @@
 package com.dmitry.AutoPass.auth.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
 
-public record LoginRequest(@NotBlank String username, @NotBlank String password) {
+@Data
+public class LoginRequest {
+    private String email;
+    private String password;
 }

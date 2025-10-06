@@ -1,14 +1,10 @@
 package com.dmitry.AutoPass.auth.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import lombok.Data;
 
-public record RegisterRequest(String fullName, String email, String password) {
+@Data
+public class RegisterRequest {
+    private String email;
+    private String password;
+    private String fullName; // опционально
 }
-/*public record RegisterRequest(
-        @NotBlank @Email String email,
-        @NotBlank @Size(min = 8, max = 72) String password,
-        @NotBlank @Size(min = 2, max = 200) String fullName
-) {
-}*/
