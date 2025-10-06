@@ -3,7 +3,7 @@ package com.dmitry.AutoPass.user;
 import com.dmitry.AutoPass.auth.dto.RegisterRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -11,15 +11,17 @@ import java.util.Optional;
 @Service
 public class UserService {
     private final UserRepository repo;
-    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder encoder;
 
-    public UserService(UserRepository repo) {
+    public UserService(UserRepository repo, PasswordEncoder encoder) {
         this.repo = repo;
+        this.encoder = encoder;
     }
+
     @Transactional
     public User register(RegisterRequest req){
         String email = req.email().toLowerCase().trim();
-        if (repo.existsAllByEmail(email)){
+        if (repo.existsByEmail(email)) {
             throw new DataIntegrityViolationException("Email already registered");
         }
         User u = new User();
@@ -33,6 +35,7 @@ public class UserService {
     public Optional<User> findByEmail(String email){
         return repo.findByEmail(email.toLowerCase().trim());
     }
+
     public boolean matches(String raw, String hash){
         return encoder.matches(raw, hash);
     }

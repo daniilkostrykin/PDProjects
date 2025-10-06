@@ -1,7 +1,12 @@
 package com.dmitry.AutoPass.auth.dto;
 
-import java.time.Instant;
-import java.util.UUID;
+import com.dmitry.AutoPass.user.User;
 
-public record UserResponse(UUID id, String email, String fullName, Instant createdAt) {}
+
+public record UserResponse(Long id, String email, String fullName, String role) {
+    public UserResponse(User u) {
+        this(u.getId(), u.getEmail(), u.getFullName(), u.getRole().name());
+    }
+}
+
 

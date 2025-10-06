@@ -1,47 +1,43 @@
 package com.dmitry.AutoPass.jwt;
 
-
-import io.jsonwebtoken.Claims;
+import com.dmitry.AutoPass.user.User;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.Map;
-
+import java.util.List;
 
 @Service
 public class JwtService {
-    private final SecretKey key;
 
-    public JwtService() {
-        String secret = System.getenv().getOrDefault(
-                "JWT_SECRET", "change-me-super-secret-change-me-32-bytes-minimum-string-123456");
-        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    @Value("${app.jwt.secret}")
+    private String secret;
+
+    @Value("${app.jwt.ttlMinutes:60}")
+    private long ttlMinutes;
+
+    private Key key() {
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    // выпуск токена
-    public String issue(String subject, java.util.Map<String,Object> claims, long ttlSeconds) {
-        var now = java.time.Instant.now();
+    public String generate(User user) {
+        Instant now = Instant.now();
         return Jwts.builder()
-                .subject(subject)
-                .claims(claims)
-                .issuedAt(java.util.Date.from(now))
-                .expiration(java.util.Date.from(now.plusSeconds(ttlSeconds)))
-                .signWith(key)
+                .setSubject(String.valueOf(user.getId()))
+                .claim("email", user.getEmail())
+                .claim("roles", List.of(user.getRole().name()))
+                .setIssuedAt(Date.from(now))
+                .setExpiration(Date.from(now.plus(ttlMinutes, ChronoUnit.MINUTES)))
+                .signWith(key(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // разбор токена
-    public Claims parse(String token) {
-        return Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-    }
+    public Key getSigningKey() { return key(); }
 }
