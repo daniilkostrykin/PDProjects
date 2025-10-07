@@ -1,57 +1,26 @@
-# Multi-stage Dockerfile for Vite (React) frontend
-# Works with any checked-out git branch. The branch you build is the one in your working tree.
-
-# ---------- Builder ----------
-FROM node:20-alpine AS builder
+# Build stage
+FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
-# Install deps first (better layer caching)
-COPY package*.json ./
-RUN npm ci --no-audit --no-fund
+# Copy pom first for caching
+COPY pom.xml ./
+RUN mvn -q -e -B -DskipTests dependency:go-offline
 
-# Copy the rest of the source
-COPY . .
+# Copy sources
+COPY src ./src
 
-# Optional: pass build-time envs for Vite (e.g. VITE_API_URL)
-ARG VITE_API_URL
-ENV VITE_API_URL=${VITE_API_URL}
+# Build jar
+RUN mvn -q -e -B -DskipTests package
 
-# Build static assets
-RUN npm run build
+# Run stage
+FROM eclipse-temurin:21-jre
+WORKDIR /app
 
-# ---------- Runtime (Nginx) ----------
-FROM nginx:1.27-alpine AS runtime
+# JVM memory opts via env (override in compose if needed)
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
 
-# Copy build output
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=build /app/target/*.jar /app/app.jar
+EXPOSE 8080
 
-# Provide a basic nginx config optimized for SPAs
-COPY <<'EOF' /etc/nginx/conf.d/default.conf
-server {
-    listen 80;
-    server_name _;
-
-    root /usr/share/nginx/html;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    # Static assets caching
-    location ~* \.(?:js|css|png|jpg|jpeg|gif|svg|ico|webp)$ {
-        expires 30d;
-        access_log off;
-        add_header Cache-Control "public, max-age=2592000, immutable";
-        try_files $uri =404;
-    }
-}
-EOF
-
-EXPOSE 80
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD wget -qO- http://127.0.0.1/ >/dev/null 2>&1 || exit 1
-
-# Default command
-CMD ["nginx", "-g", "daemon off;"]
-
+ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /app/app.jar"]
 
