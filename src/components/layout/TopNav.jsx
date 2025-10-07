@@ -1,56 +1,36 @@
-import { NavLink, useNavigate } from 'react-router-dom'
-import { useContext } from 'react'
-import { Context } from '../../context'
-import {
-  // user
-  USER_REQUEST, USER_PASSES, USER_PROFILE,
-  // admin
-  ADMIN_HOME, ADMIN_QUEUE, ADMIN_APPROVED, ADMIN_EMPLOYEES, ADMIN_REPORTS, ADMIN_SETTINGS,
-  DASHBOARD_ROUTE
-} from '../../utils/consts'
+// src/components/TopNav/TopNav.jsx
+import { NavLink } from 'react-router-dom';
 
-export default function TopNav() {
-  const { user } = useContext(Context)
-  const navigate = useNavigate()
-
-  // Универсальный флаг админа: берём либо готовый user.isAdmin, либо из ролей.
-  const isAdmin = typeof user.isAdmin === 'boolean'
-    ? user.isAdmin
-    : Array.isArray(user.roles) && user.roles.includes('ROLE_ADMIN')
-
-  const onLogout = async () => {
-    // не трогаю твою реализацию — просто вызываю её
-    await user.logout?.()
-    navigate('/login', { replace: true })
-  }
-
+export default function TopNav({ onLogout }) {
   return (
-    <header className="topnav">
-      <NavLink to={DASHBOARD_ROUTE} className="brand">AutoPass</NavLink>
+    <header className="topbar">
+      <div className="topbar__inner container">
+        <div className="navBrand">AutoPass</div>
 
-      <nav className="links">
-        {!isAdmin && (
-          <>
-            <NavLink to={USER_REQUEST}>Оформить пропуск</NavLink>
-            <NavLink to={USER_PASSES}>Мои пропуска</NavLink>
-            <NavLink to={USER_PROFILE}>Профиль</NavLink>
-          </>
-        )}
+        <nav className="nav">
+          <NavLink to="/request" className={({isActive}) => "nav__link" + (isActive ? " is-active" : "")}>
+            Оформить пропуск
+          </NavLink>
+          <NavLink to="/my" className={({isActive}) => "nav__link" + (isActive ? " is-active" : "")}>
+            Мои пропуска
+          </NavLink>
+          <NavLink to="/profile" className={({isActive}) => "nav__link" + (isActive ? " is-active" : "")}>
+            Профиль
+          </NavLink>
+        </nav>
 
-        {isAdmin && (
-          <>
-            <NavLink to={ADMIN_HOME}>Статистика</NavLink>
-            <NavLink to={ADMIN_QUEUE}>Очередь</NavLink>
-            <NavLink to={ADMIN_APPROVED}>Одобренные</NavLink>
-            <NavLink to={ADMIN_EMPLOYEES}>Сотрудники</NavLink>
-            <NavLink to={ADMIN_REPORTS}>Отчёты</NavLink>
-            <NavLink to={ADMIN_SETTINGS}>Настройки</NavLink>
-          </>
-        )}
-      </nav>
+        <div className="spacer" />
 
-      <div className="spacer" />
-      <button className="btn" onClick={onLogout}>Выйти</button>
+        <div className="topbar__search">
+          <input className="searchInput" placeholder="Поиск…" />
+        </div>
+
+        <div className="topbar__actions">
+          {/* если нужен профиль-меню — сюда */}
+          <button className="btn btn--ghost">Помощь</button>
+          <button className="btn btn--primary" onClick={onLogout}>Выйти</button>
+        </div>
+      </div>
     </header>
-  )
+  );
 }
