@@ -1,14 +1,15 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
-
-// Если у тебя есть общий контекст (например, AppProvider), раскомментируй строки ниже:
-// import { AppProvider } from '@/context'
+import AppProvider from '@/context'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    {/* <AppProvider> */}
-      <App />
-    {/* </AppProvider> */}
+    <AppProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </AppProvider>
   </React.StrictMode>
 )
