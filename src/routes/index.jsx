@@ -1,44 +1,36 @@
-import AppLayout from '@/components/Layout/AppLayout.jsx';
-import Overview from '@/pages/Dashboard/Overview.jsx';
+// импортируем layout и редирект
+import AppLayout from '../components/layout/AppLayout'
+import RoleRedirect from '../pages/Dashboard/RoleRedirect'
 
-// user
-import MyPasses from '@/pages/User/MyPasses.jsx';
-import RequestPass from '@/pages/User/RequestPass.jsx';
-import Profile from '@/pages/User/Profile.jsx';
+// user страницы
+import RequestPage from '../pages/user/RequestPage/RequestPage'
+import MyPasses from '../pages/user/MyPasses'
+import Profile from '../pages/user/Profile'
 
-// admin
-import Employees from '@/pages/Admin/Employees.jsx';
-import Reports from '@/pages/Admin/Reports.jsx';
-import Settings from '@/pages/Admin/Settings.jsx';
+// admin страницы
+import AdminHome from '../pages/Admin/Home/AdminHome'
+import AdminQueue from '../pages/Admin/Queue/AdminQueue'
+import AdminApproved from '../pages/Admin/Approved/AdminApproved'
+import Employees from '../pages/Admin/Employees'
+import Reports from '../pages/Admin/Reports'
+import Settings from '../pages/Admin/Settings'
 
-import Auth from '@/pages/Auth/Auth.jsx';
-import { LOGIN_ROUTE } from '@/utils/consts';
+// …внутри <Routes>:
+<Route element={<ProtectedRoute />}>
+  <Route path="/dashboard" element={<AppLayout />}>
+    <Route index element={<RoleRedirect />} />
 
-export const publicRoutes = [
-  { path: LOGIN_ROUTE, element: <Auth /> },
-  { path: '/register', element: <Auth /> },
-];
+    {/* user */}
+    <Route path="/dashboard/request" element={<RequestPage />} />
+    <Route path="/dashboard/passes" element={<MyPasses />} />
+    <Route path="/dashboard/profile" element={<Profile />} />
 
-// вложенные приватные
-export const authRoutes = [
-  {
-    path: '/dashboard',
-    element: <AppLayout />,
-    children: [
-      { path: '', element: <Overview /> },
-
-      // user
-      { path: 'passes',  element: <MyPasses /> },
-      { path: 'request', element: <RequestPass /> },
-      { path: 'profile', element: <Profile /> },
-
-      // admin-only
-      { path: 'admin/employees', element: <Employees />, adminOnly: true },
-      { path: 'admin/reports',   element: <Reports />,   adminOnly: true },
-      { path: 'admin/settings',  element: <Settings />,  adminOnly: true },
-    ]
-  },
-
-  // корень пусть редиректит на дашборд
-  { path: '/', element: <Overview /> },
-];
+    {/* admin */}
+    <Route path="/dashboard/admin" element={<AdminHome />} />
+    <Route path="/dashboard/admin/queue" element={<AdminQueue />} />
+    <Route path="/dashboard/admin/approved" element={<AdminApproved />} />
+    <Route path="/dashboard/admin/employees" element={<Employees />} />
+    <Route path="/dashboard/admin/reports" element={<Reports />} />
+    <Route path="/dashboard/admin/settings" element={<Settings />} />
+  </Route>
+</Route>

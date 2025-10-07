@@ -6,6 +6,7 @@ import { Context } from '@/context';
 import ProtectedRoute from '@/components/ProtectedRoute.jsx';
 import PublicOnlyRoute from '@/components/PublicOnlyRoute.jsx';
 import { publicRoutes, authRoutes } from '@/routes';
+import '@/styles/theme.css';
 
 const App = observer(() => {
   const { user } = useContext(Context);
