@@ -1,0 +1,2046 @@
+
+
+Содержимое файла: App.jsx
+
+import { useContext, useEffect, useState } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
+
+import { Context } from '@/context';
+import ProtectedRoute from '@/components/ProtectedRoute.jsx';
+import PublicOnlyRoute from '@/components/PublicOnlyRoute.jsx';
+import { publicRoutes, authRoutes } from '@/routes';
+import '@/styles/theme.css';
+
+const App = observer(() => {
+  const { user } = useContext(Context);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => { setTimeout(() => setLoading(false), 0); }, []);
+  if (loading) return <div style={{ padding: 24 }}>Загрузка…</div>;
+
+  return (
+    <Routes>
+      {/* публичные */}
+      {publicRoutes.map(({ path, element }) => (
+        <Route
+          key={`pub-${path}`}
+          path={path}
+          element={<PublicOnlyRoute>{element}</PublicOnlyRoute>}
+        />
+      ))}
+
+      {/* приватные (включая nested) */}
+      {authRoutes.map(({ path, element, children, adminOnly }) => (
+        <Route
+          key={`auth-${path || 'root'}`}
+          path={path}
+          element={
+            <ProtectedRoute>
+              {adminOnly && !user.isAdmin ? <Navigate to="/dashboard" replace /> : element}
+            </ProtectedRoute>
+          }
+        >
+          {Array.isArray(children) && children.map((c) => (
+            <Route
+              key={`${path}-${c.path || 'index'}`}
+              path={c.path}
+              element={
+                <ProtectedRoute>
+                  {c.adminOnly && !user.isAdmin ? <Navigate to="/dashboard" replace /> : c.element}
+                </ProtectedRoute>
+              }
+            />
+          ))}
+        </Route>
+      ))}
+
+      {/* фоллбэк */}
+      <Route path="*" element={<Navigate to={user.isAuth ? '/dashboard' : '/login'} replace />} />
+    </Routes>
+  );
+});
+
+export default App;
+
+
+
+
+Содержимое файла: main.jsx
+
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
+import App from './App.jsx'
+import AppProvider from '@/context'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <AppProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </AppProvider>
+  </React.StrictMode>
+)
+
+
+
+
+Содержимое файла: ProtectedRoute.jsx
+
+import { Navigate, useLocation } from 'react-router-dom';
+import { useContext } from 'react';
+import { observer } from 'mobx-react-lite';
+import { Context } from '@/context';
+
+const ProtectedRoute = observer(({ children }) => {
+  const { user } = useContext(Context);
+  const location = useLocation();
+  if (!user.isAuth) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  return children;
+});
+export default ProtectedRoute;
+
+
+
+
+Содержимое файла: PublicOnlyRoute.jsx
+
+import { Navigate, useLocation } from 'react-router-dom';
+import { useContext } from 'react';
+import { observer } from 'mobx-react-lite';
+import { Context } from '@/context';
+
+const PublicOnlyRoute = observer(({ children }) => {
+  const { user } = useContext(Context);
+  const location = useLocation();
+  if (user.isAuth) {
+    return <Navigate to="/dashboard" state={{ from: location }} replace />;
+  }
+  return children;
+});
+export default PublicOnlyRoute;
+
+
+
+
+Содержимое файла: AuthSwitcher.jsx
+
+import { NavLink } from 'react-router-dom';
+import styles from './AuthSwitcher.module.css';
+
+export default function AuthSwitcher({ to, children }) {
+  return (
+    <div className={styles.switcher}>
+      <NavLink to={to} className={styles.link}>
+        {children}
+      </NavLink>
+    </div>
+  );
+}
+
+
+
+
+Содержимое файла: AuthSwitcher.module.css
+
+.switcher { text-align:center; }
+.link { color:#1f64ff; text-decoration:none; }
+.link:hover { text-decoration:underline; }
+
+
+
+
+Содержимое файла: Brand.jsx
+
+import styles from './Brand.module.css';
+
+export default function Brand() {
+  return (
+    <div className={styles.wrap}>
+      <div className={styles.logo}>🛂</div>
+      <div className={styles.name}>AutoPass</div>
+    </div>
+  );
+}
+
+
+
+
+Содержимое файла: Brand.module.css
+
+.wrap { display:flex; align-items:center; gap:10px; justify-content:center; }
+.logo { font-size:28px; line-height:1; }
+.name { font-weight:700; font-size:22px; }
+
+
+
+
+Содержимое файла: FormInput.jsx
+
+import styles from './FormInput.module.css';
+
+export default function FormInput({ value, onChange, type='text', placeholder, containerStyle }) {
+  return (
+    <div className={styles.container} style={containerStyle}>
+      <input
+        className={styles.input}
+        value={value}
+        onChange={onChange}
+        type={type}
+        placeholder={placeholder}
+        required
+      />
+    </div>
+  );
+}
+
+
+
+
+Содержимое файла: FormInput.module.css
+
+.container { margin: 10px 0; }
+.input {
+  width:100%;
+  padding:10px 12px;
+  border:1px solid #d9d9d9;
+  border-radius:10px;
+  outline:none;
+}
+.input:focus { border-color:#1f64ff; box-shadow:0 0 0 3px rgba(31,100,255,0.12); }
+
+
+
+
+Содержимое файла: ResetButton.jsx
+
+import { NavLink } from 'react-router-dom';
+import styles from './ResetButton.module.css';
+
+export default function ResetButton() {
+  return (
+    <NavLink to="/reset" className={styles.reset}>Забыли пароль?</NavLink>
+  );
+}
+
+
+
+
+Содержимое файла: ResetButton.module.css
+
+.reset { color:#667; font-size:13px; text-decoration:none; }
+.reset:hover { text-decoration:underline; }
+
+
+
+
+Содержимое файла: SubmitButton.jsx
+
+import styles from './SubmitButton.module.css';
+
+export default function SubmitButton({ isLoading, children }) {
+  return (
+    <button className={styles.btn} type="submit" disabled={isLoading}>
+      {isLoading ? 'Загрузка…' : children}
+    </button>
+  );
+}
+
+
+
+
+Содержимое файла: SubmitButton.module.css
+
+.btn {
+  width:100%;
+  padding:10px 14px;
+  border-radius:10px;
+  border:1px solid #1f64ff;
+  background:#1f64ff;
+  color:#fff;
+  cursor:pointer;
+}
+.btn:disabled { opacity:.7; cursor:not-allowed; }
+
+
+
+
+Содержимое файла: Toast.jsx
+
+import { useEffect, useState } from 'react';
+import styles from './Toast.module.css';
+
+export default function Toast({ message, type='error', duration=3000 }) {
+  const [show, setShow] = useState(true);
+  useEffect(() => {
+    const id = setTimeout(()=>setShow(false), duration);
+    return () => clearTimeout(id);
+  }, [duration]);
+
+  if (!show) return null;
+  return (
+    <div className={`${styles.toast} ${styles[type]}`}>
+      {message}
+    </div>
+  );
+}
+
+
+
+
+Содержимое файла: Toast.module.css
+
+.toast {
+  position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+  padding: 10px 14px; border-radius: 10px; color: #fff; z-index: 9999;
+}
+.success { background: #2e7d32; }
+.error { background: #d32f2f; }
+
+
+
+
+Содержимое файла: AccessDenied.jsx
+
+export default function AccessDenied() {
+  return (
+    <div style={{ padding: 24 }}>
+      <h2>Недостаточно прав</h2>
+      <p>У вас нет доступа к этому разделу. Обратитесь к администратору.</p>
+    </div>
+  );
+}
+
+
+
+
+Содержимое файла: AppLayout.jsx
+
+import { Outlet } from 'react-router-dom'
+import TopNav from './TopNav'
+
+export default function AppLayout() {
+  return (
+    <div className="app">
+      <TopNav />
+      <main className="container">
+        <Outlet />
+      </main>
+    </div>
+  )
+}
+
+
+
+
+Содержимое файла: Header.jsx
+
+import { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Context } from '@/context';
+
+export default function Header() {
+  const { user } = useContext(Context);
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
+  const onLogout = async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      await user.logout();            // см. обновление в UserStore ниже
+      navigate('/login', { replace: true });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <header style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '12px 16px', borderBottom: '1px solid var(--card-border)', background: '#fff'
+    }}>
+      <div style={{ fontWeight: 600 }}>AutoPass</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{ opacity: 0.8 }}>
+          {user.user?.email || '—'} {user.isAdmin ? ' · Админ' : ' · Пользователь'}
+        </span>
+        <button onClick={onLogout} disabled={loading} style={{
+          border: '1px solid #ddd', background: 'white', padding: '6px 10px', borderRadius: 6, cursor: 'pointer'
+        }}>
+          {loading ? 'Выходим…' : 'Выйти'}
+        </button>
+      </div>
+    </header>
+  );
+}
+
+
+
+
+Содержимое файла: Sidebar.jsx
+
+import { NavLink } from 'react-router-dom';
+
+export default function Sidebar({ nav }) {
+  return (
+    <aside style={{ borderRight: '1px solid var(--card-border)', background: '#fff' }}>
+      <div style={{ padding: 16, fontWeight: 600, opacity: 0.7 }}>Меню</div>
+      <nav style={{ display: 'flex', flexDirection: 'column' }}>
+        {nav.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            style={({ isActive }) => ({
+              padding: '10px 16px',
+              textDecoration: 'none',
+              color: isActive ? 'var(--primary)' : 'inherit',
+              background: isActive ? 'rgba(37,99,235,0.08)' : 'transparent'
+            })}
+          >
+            {item.label}
+          </NavLink>
+        ))}
+      </nav>
+    </aside>
+  );
+}
+
+
+
+
+Содержимое файла: TopNav.jsx
+
+import { NavLink, useNavigate } from 'react-router-dom'
+import { useContext } from 'react'
+import { Context } from '../../context'
+import {
+  // user
+  USER_REQUEST, USER_PASSES, USER_PROFILE,
+  // admin
+  ADMIN_HOME, ADMIN_QUEUE, ADMIN_APPROVED, ADMIN_EMPLOYEES, ADMIN_REPORTS, ADMIN_SETTINGS,
+  DASHBOARD_ROUTE
+} from '../../utils/consts'
+
+export default function TopNav() {
+  const { user } = useContext(Context)
+  const navigate = useNavigate()
+
+  // Универсальный флаг админа: берём либо готовый user.isAdmin, либо из ролей.
+  const isAdmin = typeof user.isAdmin === 'boolean'
+    ? user.isAdmin
+    : Array.isArray(user.roles) && user.roles.includes('ROLE_ADMIN')
+
+  const onLogout = async () => {
+    // не трогаю твою реализацию — просто вызываю её
+    await user.logout?.()
+    navigate('/login', { replace: true })
+  }
+
+  return (
+    <header className="topnav">
+      <NavLink to={DASHBOARD_ROUTE} className="brand">AutoPass</NavLink>
+
+      <nav className="links">
+        {!isAdmin && (
+          <>
+            <NavLink to={USER_REQUEST}>Оформить пропуск</NavLink>
+            <NavLink to={USER_PASSES}>Мои пропуска</NavLink>
+            <NavLink to={USER_PROFILE}>Профиль</NavLink>
+          </>
+        )}
+
+        {isAdmin && (
+          <>
+            <NavLink to={ADMIN_HOME}>Статистика</NavLink>
+            <NavLink to={ADMIN_QUEUE}>Очередь</NavLink>
+            <NavLink to={ADMIN_APPROVED}>Одобренные</NavLink>
+            <NavLink to={ADMIN_EMPLOYEES}>Сотрудники</NavLink>
+            <NavLink to={ADMIN_REPORTS}>Отчёты</NavLink>
+            <NavLink to={ADMIN_SETTINGS}>Настройки</NavLink>
+          </>
+        )}
+      </nav>
+
+      <div className="spacer" />
+      <button className="btn" onClick={onLogout}>Выйти</button>
+    </header>
+  )
+}
+
+
+
+
+Содержимое файла: CarBrandField.jsx
+
+import React from 'react';
+export default function CarBrandField({ value, onChange }) {
+return (
+<div>
+<label>Марка</label>
+<input className="input" placeholder="Напр. Toyota" value={value} onChange={e=>onChange(e.target.value)} />
+</div>
+);
+}
+
+
+
+Содержимое файла: CarModelField.jsx
+
+import React from 'react';
+export default function CarModelField({ value, onChange }) {
+return (
+<div>
+<label>Модель</label>
+<input className="input" placeholder="Напр. Camry" value={value} onChange={e=>onChange(e.target.value)} />
+</div>
+);
+}
+
+
+
+Содержимое файла: CarPlateField.jsx
+
+import React from 'react';
+export default function CarPlateField({ value, onChange }) {
+return (
+<div>
+<label>Номер автомобиля</label>
+<input className="input" placeholder="A123BC" value={value} onChange={e=>onChange(e.target.value)} />
+</div>
+);
+}
+
+
+
+Содержимое файла: DateField.jsx
+
+import React from 'react';
+export default function DateField({ value, onChange }) {
+return (
+<div>
+<label>Дата посещения</label>
+<input className="date" type="date" value={value} onChange={e=>onChange(e.target.value)} />
+</div>
+);
+}
+
+
+
+Содержимое файла: FullNameField.jsx
+
+import React from 'react';
+export default function FullNameField({ value, onChange }) {
+return (
+<div>
+<label>ФИО</label>
+<input className="input" placeholder="Иванов Иван" value={value} onChange={e=>onChange(e.target.value)} />
+</div>
+);
+}
+
+
+
+Содержимое файла: PassTypeSelect.jsx
+
+import React from 'react';
+export default function PassTypeSelect({ value, onChange }) {
+return (
+<div>
+<label>Вид пропуска</label>
+<select className="select" value={value} onChange={e=>onChange(e.target.value)}>
+<option value="car">Автомобиль</option>
+<option value="foot">Пеший</option>
+</select>
+</div>
+);
+}
+
+
+
+Содержимое файла: ReasonField.jsx
+
+import React from 'react';
+export default function ReasonField({ value, onChange }) {
+return (
+<div>
+<label>Причина визита</label>
+<textarea className="textarea" rows={3} placeholder="Опишите цель визита" value={value} onChange={e=>onChange(e.target.value)} />
+</div>
+);
+}
+
+
+
+Содержимое файла: RequestForm.jsx
+
+import React, { useMemo, useState } from 'react';
+import CarPlateField from '@/components/PassRequest/fields/CarPlateField';
+
+
+export default function RequestForm({ onSubmit }) {
+const [type, setType] = useState('car');
+const [fullName, setFullName] = useState('');
+const [date, setDate] = useState('');
+const [reason, setReason] = useState('');
+const [carBrand, setCarBrand] = useState('');
+const [carModel, setCarModel] = useState('');
+const [carPlate, setCarPlate] = useState('');
+const [error, setError] = useState(null);
+
+
+const isCar = type === 'car';
+
+
+const canSubmit = useMemo(() => {
+if (!fullName || !date || !reason) return false;
+if (isCar && (!carBrand || !carModel || !carPlate)) return false;
+return true;
+}, [fullName, date, reason, isCar, carBrand, carModel, carPlate]);
+
+
+function handleSubmit(e) {
+e.preventDefault();
+setError(null);
+if (!canSubmit) { setError('Заполните обязательные поля.'); return; }
+const payload = { type, fullName, date, reason };
+if (isCar) Object.assign(payload, { carBrand, carModel, carPlate });
+onSubmit?.(payload);
+}
+
+
+return (
+<form className="grid" onSubmit={handleSubmit}>
+<div className="row">
+<PassTypeSelect value={type} onChange={setType} />
+<DateField value={date} onChange={setDate} />
+</div>
+
+
+{isCar && (
+<div className="row">
+<CarBrandField value={carBrand} onChange={setCarBrand} />
+<CarModelField value={carModel} onChange={setCarModel} />
+</div>
+)}
+
+
+{isCar && (
+<CarPlateField value={carPlate} onChange={setCarPlate} />
+)}
+
+
+<FullNameField value={fullName} onChange={setFullName} />
+<ReasonField value={reason} onChange={setReason} />
+
+
+{error && <div className="badge badge--rejected" style={{marginTop:8}}><span className="badgeDot"/> {error}</div>}
+
+
+<div style={{ display:'flex', gap: 8, marginTop: 12 }}>
+<button className="btn btnPrimary" type="submit" disabled={!canSubmit}>Подать заявление</button>
+<button className="btn btnGhost" type="reset" onClick={() => {
+setFullName(''); setDate(''); setReason(''); setCarBrand(''); setCarModel(''); setCarPlate('');
+}}>Сбросить</button>
+</div>
+</form>
+);
+}
+
+
+
+Содержимое файла: StatusBadge.jsx
+
+import React from 'react';
+export default function StatusBadge({ status }) {
+const map = {
+approved: { label:'Одобрено', cls:'badge badge--approved' },
+pending: { label:'В обработке', cls:'badge badge--pending' },
+rejected: { label:'Отклонено', cls:'badge badge--rejected' },
+};
+const it = map[status] || { label: status, cls:'badge' };
+return (<span className={it.cls}><span className="badgeDot"/> {it.label}</span>);
+}
+
+
+
+Содержимое файла: index.jsx
+
+import React, { createContext, useEffect, useState } from 'react';
+import UserStore from '@/store/UserStore';
+
+export const Context = createContext(null);
+
+export default function AppProvider({ children }) {
+  const [stores] = useState(() => ({ user: new UserStore() }));
+  const [booted, setBooted] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      if (typeof stores.user.checkOnStart === 'function') {
+        await stores.user.checkOnStart();
+      }
+      setBooted(true);
+    })();
+  }, [stores]);
+
+  if (!booted) return null; // можно поставить сплэш/скелетон
+
+  return (
+    <Context.Provider value={stores}>
+      {children}
+    </Context.Provider>
+  );
+}
+
+
+
+
+Содержимое файла: index.js
+
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const ACCESS_TOKEN_KEY = 'token';
+
+export const $host = axios.create({
+  baseURL: API_URL,
+});
+
+export const $authHost = axios.create({
+  baseURL: API_URL,
+  withCredentials: true, // нужно, если refresh хранится в httpOnly cookie
+});
+
+export function saveToken(token) {
+  if (token) localStorage.setItem(ACCESS_TOKEN_KEY, token);
+}
+export function getToken() {
+  return localStorage.getItem(ACCESS_TOKEN_KEY);
+}
+export function removeToken() {
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+}
+
+// Парсинг JWT для получения пользователя и ролей
+export function parseUserFromToken(token) {
+  try {
+    if (!token) return null;
+    const payload = token.split('.')[1];
+    const json = JSON.parse(decodeURIComponent(escape(atob(payload))));
+    // ожидаем поля sub/email/roles — подстрой при необходимости
+    return {
+      id: json.userId || json.id || null,
+      email: json.email || json.sub || null,
+      roles: Array.isArray(json.roles) ? json.roles : (json.authorities || []),
+      raw: json,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// ---- Interceptors ----
+
+// Добавляем Authorization на каждый запрос через $authHost
+$authHost.interceptors.request.use((config) => {
+  const token = getToken();
+  if (token) {
+    config.headers = config.headers || {};
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Авто-рефреш access-токена по 401 (если есть эндпоинт /api/v1/auth/refresh)
+let isRefreshing = false;
+let pendingQueue = [];
+
+function processQueue(error, newToken) {
+  pendingQueue.forEach(({ resolve, reject }) => {
+    if (error) reject(error);
+    else resolve(newToken);
+  });
+  pendingQueue = [];
+}
+
+$authHost.interceptors.response.use(
+  (res) => res,
+  async (error) => {
+    const original = error.config || {};
+    const status = error?.response?.status;
+
+    if (status === 401 && !original._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          pendingQueue.push({
+            resolve: (token) => {
+              original.headers.Authorization = `Bearer ${token}`;
+              resolve($authHost(original));
+            },
+            reject,
+          });
+        });
+      }
+
+      original._retry = true;
+      isRefreshing = true;
+
+      try {
+        const resp = await $host.post('/api/v1/auth/refresh', {}, { withCredentials: true });
+        const newToken = resp?.data?.accessToken || resp?.data?.token;
+        if (!newToken) throw new Error('No access token in refresh response');
+
+        saveToken(newToken);
+        processQueue(null, newToken);
+
+        original.headers = original.headers || {};
+        original.headers.Authorization = `Bearer ${newToken}`;
+        return $authHost(original);
+      } catch (err) {
+        processQueue(err, null);
+        removeToken();
+        return Promise.reject(err);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+
+
+
+Содержимое файла: userApi.js
+
+import { $host, $authHost } from './index';
+
+// ============================
+// 🔹 Регистрация нового пользователя
+// ============================
+export const registerApi = async ({ email, password, fullName }) => {
+  // тело можно подогнать под твой backend (если поля называются иначе)
+  const response = await $host.post(
+    '/api/v1/auth/register',
+    { email, password, fullName },
+    { withCredentials: true } // если refresh токен в cookie
+  );
+  return response;
+};
+
+// ============================
+// 🔹 Авторизация (вход)
+// ============================
+export const loginApi = async ({ email, password }) => {
+  const response = await $host.post(
+    '/api/v1/auth/login',
+    { email, password },
+    { withCredentials: true }
+  );
+  return response;
+};
+
+// ============================
+// 🔹 Обновление access токена
+// ============================
+export const refreshApi = async () => {
+  const response = await $host.post('/api/v1/auth/refresh', {}, { withCredentials: true });
+  return response;
+};
+
+// ============================
+// 🔹 Выход из аккаунта (logout)
+// ============================
+export const logoutApi = async () => {
+  const response = await $authHost.post('/api/v1/auth/logout', {}, { withCredentials: true });
+  return response;
+};
+
+// ============================
+// 🔹 Получение профиля (опционально)
+// ============================
+export const getProfileApi = async () => {
+  const response = await $authHost.get('/api/v1/user/profile');
+  return response;
+};
+
+
+
+
+Содержимое файла: Employees.jsx
+
+import { useContext } from 'react';
+import { Context } from '@/context';
+import AccessDenied from '@/components/common/AccessDenied';
+
+export default function Employees() {
+  const { user } = useContext(Context);
+  if (!user.isAdmin) return <AccessDenied />;
+
+  return (
+    <div>
+      <h2>Сотрудники</h2>
+      <p style={{ opacity: 0.8 }}>CRUD по сотрудникам (добавить/редактировать/удалять).</p>
+      {/* TODO: таблица, поиск, фильтры; интеграция с бэком */}
+    </div>
+  );
+}
+
+
+
+
+Содержимое файла: Reports.jsx
+
+import { useContext } from 'react';
+import { Context } from '@/context';
+import AccessDenied from '@/components/common/AccessDenied';
+
+export default function Reports() {
+  const { user } = useContext(Context);
+  if (!user.isAdmin) return <AccessDenied />;
+
+  return (
+    <div>
+      <h2>Журналы / Отчёты</h2>
+      <p style={{ opacity: 0.8 }}>Просмотр журнала доступа, выгрузка в CSV/Excel, фильтры по датам.</p>
+      {/* TODO: таблица логов, фильтры дат, экспорт */}
+    </div>
+  );
+}
+
+
+
+
+Содержимое файла: Settings.jsx
+
+import { useContext } from 'react';
+import { Context } from '@/context';
+import AccessDenied from '@/components/common/AccessDenied';
+
+export default function Settings() {
+  const { user } = useContext(Context);
+  if (!user.isAdmin) return <AccessDenied />;
+
+  return (
+    <div>
+      <h2>Настройки системы</h2>
+      <ul style={{ opacity: 0.9 }}>
+        <li>Параметры шаблонов пропусков</li>
+        <li>Управление ролями и доступами</li>
+        <li>Интеграции (сканер/OCR, почта и т.п.)</li>
+      </ul>
+      {/* TODO: формы настроек и вызовы бэка */}
+    </div>
+  );
+}
+
+
+
+
+Содержимое файла: AdminApproved.jsx
+
+import ApprovedTable from './components/ApprovedTable'
+export default function AdminApproved() {
+  return <ApprovedTable rows={[]} />
+}
+
+
+
+
+Содержимое файла: ApprovedTable.jsx
+
+export default function ApprovedTable({ rows=[] }) {
+  return (
+    <div className="card">
+      <table className="table">
+        <thead><tr><th>Дата</th><th>ФИО</th><th>Тип</th></tr></thead>
+        <tbody>
+          {rows.map((r,i)=>(
+            <tr key={i}><td>{r.date}</td><td>{r.fullName}</td><td>{r.passType}</td></tr>
+          ))}
+          {!rows.length && <tr><td colSpan="3" className="muted">Нет записей</td></tr>}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+
+
+
+Содержимое файла: AdminHome.jsx
+
+import AdminKpis from './components/AdminKpis'
+import MiniBar from './components/MiniBar'
+
+export default function AdminHome() {
+  return (
+    <>
+      <AdminKpis />
+      <MiniBar />
+    </>
+  )
+}
+
+
+
+
+Содержимое файла: AdminKpis.jsx
+
+export default function AdminKpis() {
+  return (
+    <div className="grid3">
+      <div className="stat"><div className="stat-num">24</div><div className="stat-label">Новые</div></div>
+      <div className="stat"><div className="stat-num">128</div><div className="stat-label">За месяц</div></div>
+      <div className="stat"><div className="stat-num">87%</div><div className="stat-label">Одобрено</div></div>
+    </div>
+  )
+}
+
+
+
+
+Содержимое файла: MiniBar.jsx
+
+export default function MiniBar() {
+  return <div className="card">Мини-график (заглушка)</div>
+}
+
+
+
+
+Содержимое файла: AdminQueue.jsx
+
+import QueueTable from './components/QueueTable'
+export default function AdminQueue() {
+  return <QueueTable rows={[]} />
+}
+
+
+
+
+Содержимое файла: QueueTable.jsx
+
+function StatusBadge({ status }) {
+  const map = { approved: 'Одобрен', pending: 'На рассмотрении', rejected: 'Отклонён' }
+  return <span className={`badge badge--${status}`}>{map[status] || status}</span>
+}
+
+export default function QueueTable({ rows=[] }) {
+  return (
+    <div className="card">
+      <table className="table">
+        <thead><tr><th>Дата</th><th>ФИО</th><th>Тип</th><th>Статус</th><th></th></tr></thead>
+        <tbody>
+          {rows.map((r,i)=>(
+            <tr key={i}>
+              <td>{r.date}</td><td>{r.fullName}</td>
+              <td>{r.passType}</td>
+              <td><StatusBadge status={r.status}/></td>
+              <td className="row">
+                <button className="btn btn--primary">Одобрить</button>
+                <button className="btn btn--ghost">Отклонить</button>
+              </td>
+            </tr>
+          ))}
+          {!rows.length && <tr><td colSpan="5" className="muted">Очередь пуста</td></tr>}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+
+
+
+Содержимое файла: Auth.jsx
+
+import { useContext, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
+import { LOGIN_ROUTE, REGISTRATION_ROUTE } from '@/utils/consts';
+import { Context } from '../../context';
+import classes from './Auth.module.css';
+
+
+import Brand from '../../components/Auth/Brand/Brand';
+import FormInput from '../../components/Auth/FormInput/FormInput';
+import SubmitButton from '../../components/Auth/SubmitButton/SubmitButton';
+import AuthSwitcher from '../../components/Auth/AuthSwitcher/AuthSwitcher';
+import ResetButton from '../../components/Auth/ResetButton/ResetButton';
+import Toast from '../../components/Auth/Toast/Toast';
+
+
+const validateLogin = ({ email, password }) => {
+  if (!email?.trim()) return 'Укажите email';
+  if (!password?.trim()) return 'Введите пароль';
+  return null;
+};
+const validateRegistration = ({ fullName, email, password, confirmedPassword }) => {
+  if (!fullName?.trim()) return 'Укажите имя';
+  if (!email?.trim()) return 'Укажите email';
+  if (!password?.trim()) return 'Введите пароль';
+  if (password !== confirmedPassword) return 'Пароли не совпадают';
+  return null;
+};
+
+const Auth = observer(() => {
+  const { user } = useContext(Context);
+  const location = useLocation();
+
+  const isLogin = location.pathname === LOGIN_ROUTE;
+  const isRegistration = location.pathname === REGISTRATION_ROUTE;
+
+  // форма
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail]       = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmedPassword, setConfirmedPassword] = useState('');
+
+  // состояние UI
+  const [isLoading, setIsLoading]   = useState(false);
+  const [toast, setToast]           = useState(null); // {type:'success'|'error', message:string, key:number}
+  const pushToast = (type, message) => setToast({ type, message, key: Date.now() });
+
+  useEffect(() => {
+    // сбрасываем форму при переключении вкладок
+    setFullName(''); setEmail(''); setPassword(''); setConfirmedPassword('');
+  }, [location.pathname]);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    const err = isLogin
+      ? validateLogin({ email, password })
+      : validateRegistration({ fullName, email, password, confirmedPassword });
+
+    if (err) { pushToast('error', err); return; }
+
+    try {
+      setIsLoading(true);
+      if (isLogin) {
+        await user.login({ email, password });
+        pushToast('success', 'Успешный вход');
+      } else {
+        await user.register({ email, password, fullName });
+        pushToast('success', 'Аккаунт создан');
+      }
+    } catch (e) {
+      pushToast('error', e?.message || 'Ошибка авторизации');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  return (
+    <div className={classes?.container || ''} style={{ maxWidth: 380, margin: '40px auto' }}>
+      <Brand />
+
+      <form onSubmit={handleSubmit} style={{ marginTop: 16 }}>
+        {!isLogin && (
+          <FormInput
+            value={fullName}
+            onChange={e=>setFullName(e.target.value)}
+            type="text"
+            placeholder="Имя и фамилия"
+          />
+        )}
+
+        <FormInput
+          value={email}
+          onChange={e=>setEmail(e.target.value)}
+          type="email"
+          placeholder="Электронная почта"
+        />
+
+        <FormInput
+          value={password}
+          onChange={e=>setPassword(e.target.value)}
+          type="password"
+          placeholder="Пароль"
+          containerStyle={{ marginBottom: isLogin ? 8 : 0 }}
+        />
+
+        {!isLogin && (
+          <FormInput
+            value={confirmedPassword}
+            onChange={e=>setConfirmedPassword(e.target.value)}
+            type="password"
+            placeholder="Подтвердите пароль"
+            containerStyle={{ marginTop: 8 }}
+          />
+        )}
+
+        {isLogin && (
+          <div style={{ marginTop: 6, marginBottom: 10 }}>
+            <ResetButton />
+          </div>
+        )}
+
+        <SubmitButton isLoading={isLoading}>
+          {isLogin ? 'Войти' : 'Создать аккаунт'}
+        </SubmitButton>
+      </form>
+
+      <div style={{ marginTop: 10 }}>
+        <AuthSwitcher to={isRegistration ? LOGIN_ROUTE : REGISTRATION_ROUTE}>
+          {isRegistration ? 'Войти' : 'Создать аккаунт'}
+        </AuthSwitcher>
+      </div>
+
+      {toast && (
+        <Toast key={toast.key} type={toast.type} message={toast.message} duration={3000} />
+      )}
+    </div>
+  );
+});
+
+export default Auth;
+
+
+
+
+Содержимое файла: Auth.module.css
+
+.container {
+  max-width: 380px;
+  margin: 40px auto;
+}
+
+
+
+
+Содержимое файла: Overview.jsx
+
+// src/pages/Dashboard/Overview.jsx
+import { useContext } from 'react';
+import { Context } from '@/context';
+
+export default function Overview() {
+  const { user } = useContext(Context);
+
+  return (
+    <div className="grid">
+      <div>
+        <h1 style={{ margin: 0 }}>Добро пожаловать в AutoPass</h1>
+        <p style={{ opacity: 0.8, marginTop: 8 }}>
+          {user.isAdmin
+            ? 'У вас административные права. Доступны разделы: сотрудники, журналы/отчёты, настройки.'
+            : 'У вас роль пользователя. Доступны разделы: мои пропуска, оформление пропуска, профиль.'}
+        </p>
+      </div>
+
+      <div
+        className="grid"
+        style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 12 }}
+      >
+        <div className="card">
+          <div className="cardBody">
+            <div className="cardTitle" style={{ fontSize: 16 }}>Статус системы</div>
+            <div style={{ opacity: 0.85, marginTop: 6 }}>Работает в штатном режиме</div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="cardBody">
+            <div className="cardTitle" style={{ fontSize: 16 }}>
+              {user.isAdmin ? 'Активные заявки' : 'Мои активные заявки'}
+            </div>
+            <div style={{ opacity: 0.85, marginTop: 6 }}>Пока пусто</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+
+Содержимое файла: RoleRedirect.jsx
+
+import { Navigate } from 'react-router-dom'
+import { useContext } from 'react'
+import { Context } from '../../context'
+import { ADMIN_HOME, USER_REQUEST } from '../../utils/consts'
+
+export default function RoleRedirect() {
+  const { user } = useContext(Context)
+  const isAdmin = typeof user.isAdmin === 'boolean'
+    ? user.isAdmin
+    : Array.isArray(user.roles) && user.roles.includes('ROLE_ADMIN')
+
+  return <Navigate to={isAdmin ? ADMIN_HOME : USER_REQUEST} replace />
+}
+
+
+
+
+Содержимое файла: MyPasses.jsx
+
+export default function MyPasses() {
+  // TODO: подцепить твои запросы к бэку
+  return (
+    <div>
+      <h2>Мои пропуска</h2>
+      <p style={{ opacity: 0.8 }}>Здесь будет список оформленных пропусков.</p>
+    </div>
+  );
+}
+
+
+
+
+Содержимое файла: Profile.jsx
+
+import { useContext } from 'react';
+import { Context } from '@/context';
+
+export default function Profile() {
+  const { user } = useContext(Context);
+
+  return (
+    <div>
+      <h2>Профиль</h2>
+      <div style={{ marginTop: 10 }}>
+        <div><b>Email:</b> {user.user?.email || '-'}</div>
+        <div><b>Роли:</b> {user.user?.roles?.join(', ') || '-'}</div>
+      </div>
+    </div>
+  );
+}
+
+
+
+
+Содержимое файла: RequestPass.jsx
+
+import { useState } from 'react';
+
+export default function RequestPass() {
+  const [form, setForm] = useState({ fullName: '', company: '', dateFrom: '', dateTo: '', reason: '' });
+
+  const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const onSubmit = (e) => {
+    e.preventDefault();
+    // TODO: POST на твой /passes/request
+    alert('Заявка отправлена (демо)');
+  };
+
+  return (
+    <div>
+      <h2>Оформить пропуск</h2>
+      <form onSubmit={onSubmit} style={{ marginTop: 12, maxWidth: 520 }}>
+        <div style={{ display: 'grid', gap: 10 }}>
+          <input name="fullName" placeholder="ФИО посетителя" value={form.fullName} onChange={onChange}/>
+          <input name="company" placeholder="Организация" value={form.company} onChange={onChange}/>
+          <div style={{ display: 'grid', gap: 10, gridTemplateColumns: '1fr 1fr' }}>
+            <input name="dateFrom" type="date" value={form.dateFrom} onChange={onChange}/>
+            <input name="dateTo" type="date" value={form.dateTo} onChange={onChange}/>
+          </div>
+          <textarea name="reason" placeholder="Цель визита" rows={4} value={form.reason} onChange={onChange}/>
+          <button type="submit" style={{
+            alignSelf: 'start', padding: '8px 14px', borderRadius: 8, border: '1px solid #ddd', cursor: 'pointer'
+          }}>Отправить заявку</button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+
+
+
+Содержимое файла: HistoryFilters.jsx
+
+export default function HistoryFilters({ value, onChange }) {
+  const set = (k)=> (val)=> onChange({ ...value, [k]: val })
+  return (
+    <div className="card row">
+      <select className="input" value={value.status} onChange={e=>set('status')(e.target.value)}>
+        <option value="">Все статусы</option>
+        <option value="pending">На рассмотрении</option>
+        <option value="approved">Одобрен</option>
+        <option value="rejected">Отклонён</option>
+      </select>
+      <input className="input" placeholder="Поиск" value={value.q} onChange={e=>set('q')(e.target.value)} />
+    </div>
+  )
+}
+
+
+
+
+Содержимое файла: HistoryTable.jsx
+
+// Если у тебя уже есть StatusBadge компонент — можешь заменить на него.
+function StatusBadge({ status }) {
+  const map = { approved: 'Одобрен', pending: 'На рассмотрении', rejected: 'Отклонён' }
+  return <span className={`badge badge--${status}`}>{map[status] || status}</span>
+}
+
+export default function HistoryTable({ rows=[] }) {
+  return (
+    <div className="card">
+      <table className="table">
+        <thead>
+          <tr><th>Дата</th><th>Тип</th><th>Основание</th><th>Статус</th></tr>
+        </thead>
+        <tbody>
+          {rows.map((r,i)=>(
+            <tr key={i}>
+              <td>{r.date}</td>
+              <td>{r.passType === 'car' ? 'Авто' : 'Пешеходный'}</td>
+              <td>{r.reason}</td>
+              <td><StatusBadge status={r.status} /></td>
+            </tr>
+          ))}
+          {!rows.length && <tr><td colSpan="4" className="muted">Пока пусто</td></tr>}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+
+
+
+Содержимое файла: RequestPage.jsx
+
+import { useState } from 'react'
+import RequestForm from './RequestForm/RequestForm'
+import HistoryFilters from './HistoryFilters'
+import HistoryTable from './HistoryTable'
+
+export default function RequestPage() {
+  const [form, setForm] = useState({
+    passType:'car', date:'', fullName:'', reason:'',
+    carBrand:'', carModel:'', carPlate:''
+  })
+  const [submitting, setSubmitting] = useState(false)
+  const [filters, setFilters] = useState({ status:'', q:'' })
+  const [history, setHistory] = useState([])
+
+  const submit = async () => {
+    setSubmitting(true)
+    try {
+      // TODO: здесь будет вызов твоего бэка, когда появится эндпоинт
+      const row = { ...form, status:'pending' }
+      setHistory([row, ...history])
+      setForm({ passType:'car', date:'', fullName:'', reason:'', carBrand:'', carModel:'', carPlate:'' })
+    } finally { setSubmitting(false) }
+  }
+
+  const filtered = history.filter(r =>
+    (!filters.status || r.status===filters.status) &&
+    (!filters.q || JSON.stringify(r).toLowerCase().includes(filters.q.toLowerCase()))
+  )
+
+  return (
+    <>
+      <RequestForm value={form} onChange={setForm} onSubmit={submit} submitting={submitting} />
+      <HistoryFilters value={filters} onChange={setFilters} />
+      <HistoryTable rows={filtered} />
+    </>
+  )
+}
+
+
+
+
+Содержимое файла: CarBrandField.jsx
+
+export default function CarBrandField({ value, onChange }) {
+  return (
+    <label className="field">
+      <span>Марка авто</span>
+      <input className="input" value={value} onChange={e=>onChange(e.target.value)} placeholder="Toyota" />
+    </label>
+  )
+}
+
+
+
+
+Содержимое файла: CarModelField.jsx
+
+export default function CarModelField({ value, onChange }) {
+  return (
+    <label className="field">
+      <span>Модель</span>
+      <input className="input" value={value} onChange={e=>onChange(e.target.value)} placeholder="Camry" />
+    </label>
+  )
+}
+
+
+
+
+Содержимое файла: CarPlateField.jsx
+
+export default function CarPlateField({ value, onChange }) {
+  return (
+    <label className="field">
+      <span>Госномер</span>
+      <input className="input" value={value} onChange={e=>onChange(e.target.value)} placeholder="A000AA77" />
+    </label>
+  )
+}
+
+
+
+
+Содержимое файла: DateField.jsx
+
+export default function DateField({ value, onChange, label='Дата' }) {
+  return (
+    <label className="field">
+      <span>{label}</span>
+      <input className="input" type="date" value={value} onChange={e=>onChange(e.target.value)} />
+    </label>
+  )
+}
+
+
+
+
+Содержимое файла: FullNameField.jsx
+
+export default function FullNameField({ value, onChange }) {
+  return (
+    <label className="field">
+      <span>ФИО</span>
+      <input className="input" value={value} onChange={e=>onChange(e.target.value)} placeholder="Иванов Иван" />
+    </label>
+  )
+}
+
+
+
+
+Содержимое файла: PassTypeSelect.jsx
+
+export default function PassTypeSelect({ value, onChange }) {
+  return (
+    <label className="field">
+      <span>Тип пропуска</span>
+      <select className="input" value={value} onChange={e=>onChange(e.target.value)}>
+        <option value="car">Автомобиль</option>
+        <option value="psh">Пешеходный</option>
+      </select>
+    </label>
+  )
+}
+
+
+
+
+Содержимое файла: ReasonField.jsx
+
+export default function ReasonField({ value, onChange }) {
+  return (
+    <label className="field">
+      <span>Основание</span>
+      <input className="input" value={value} onChange={e=>onChange(e.target.value)} placeholder="Служебная необходимость" />
+    </label>
+  )
+}
+
+
+
+
+Содержимое файла: RequestForm.jsx
+
+import PassTypeSelect from '../fields/PassTypeSelect'
+import DateField from '../fields/DateField'
+import FullNameField from '../fields/FullNameField'
+import ReasonField from '../fields/ReasonField'
+import CarBrandField from '../fields/CarBrandField'
+import CarModelField from '../fields/CarModelField'
+import CarPlateField from '../fields/CarPlateField'
+
+export default function RequestForm({ value, onChange, onSubmit, submitting }) {
+  const v = value
+  const set = (k)=> (val)=> onChange({ ...v, [k]: val })
+
+  return (
+    <form className="card" onSubmit={e=>{e.preventDefault(); onSubmit?.()}}>
+      <div className="grid2">
+        <PassTypeSelect value={v.passType} onChange={set('passType')} />
+        <DateField value={v.date} onChange={set('date')} />
+
+        <FullNameField value={v.fullName} onChange={set('fullName')} />
+        <ReasonField value={v.reason} onChange={set('reason')} />
+
+        {v.passType === 'car' && (
+          <>
+            <CarBrandField value={v.carBrand} onChange={set('carBrand')} />
+            <CarModelField value={v.carModel} onChange={set('carModel')} />
+            <CarPlateField value={v.carPlate} onChange={set('carPlate')} />
+          </>
+        )}
+      </div>
+
+      <button className="btn btn--primary" type="submit" disabled={submitting}>
+        Подать заявку
+      </button>
+    </form>
+  )
+}
+
+
+
+
+Содержимое файла: index.jsx
+
+// Импорты страниц и layout
+import AppLayout from '@/components/layout/AppLayout'
+import RoleRedirect from '@/pages/Dashboard/RoleRedirect'
+import Auth from '@/pages/Auth/Auth'
+
+// user
+import RequestPage from '@/pages/user/RequestPage/RequestPage'
+import MyPasses from '@/pages/user/MyPasses'
+import Profile from '@/pages/user/Profile'
+
+// admin
+import AdminHome from '@/pages/Admin/Home/AdminHome'
+import AdminQueue from '@/pages/Admin/Queue/AdminQueue'
+import AdminApproved from '@/pages/Admin/Approved/AdminApproved'
+import Employees from '@/pages/Admin/Employees'
+import Reports from '@/pages/Admin/Reports'
+import Settings from '@/pages/Admin/Settings'
+
+// константы путей
+import {
+  LOGIN_ROUTE,
+  REGISTRATION_ROUTE,
+  DASHBOARD_ROUTE,
+  USER_REQUEST,
+  USER_PASSES,
+  USER_PROFILE,
+  ADMIN_HOME,
+  ADMIN_QUEUE,
+  ADMIN_APPROVED,
+  ADMIN_EMPLOYEES,
+  ADMIN_REPORTS,
+  ADMIN_SETTINGS,
+} from '@/utils/consts'
+
+// Публичные маршруты (доступны, когда пользователь НЕ авторизован)
+export const publicRoutes = [
+  { path: LOGIN_ROUTE, element: <Auth /> },
+  { path: REGISTRATION_ROUTE, element: <Auth /> },
+]
+
+// Защищённые маршруты. Можно вкладывать children для nested routes внутри дашборда
+export const authRoutes = [
+  {
+    path: DASHBOARD_ROUTE,
+    element: <AppLayout />,
+    children: [
+      // index перенаправляет согласно роли
+      { path: '', element: <RoleRedirect /> },
+
+      // user
+      { path: USER_REQUEST.replace(`${DASHBOARD_ROUTE}/`, ''), element: <RequestPage /> },
+      { path: USER_PASSES.replace(`${DASHBOARD_ROUTE}/`, ''), element: <MyPasses /> },
+      { path: USER_PROFILE.replace(`${DASHBOARD_ROUTE}/`, ''), element: <Profile /> },
+
+      // admin
+      { path: ADMIN_HOME.replace(`${DASHBOARD_ROUTE}/`, ''), element: <AdminHome />, adminOnly: true },
+      { path: ADMIN_QUEUE.replace(`${DASHBOARD_ROUTE}/`, ''), element: <AdminQueue />, adminOnly: true },
+      { path: ADMIN_APPROVED.replace(`${DASHBOARD_ROUTE}/`, ''), element: <AdminApproved />, adminOnly: true },
+      { path: ADMIN_EMPLOYEES.replace(`${DASHBOARD_ROUTE}/`, ''), element: <Employees />, adminOnly: true },
+      { path: ADMIN_REPORTS.replace(`${DASHBOARD_ROUTE}/`, ''), element: <Reports />, adminOnly: true },
+      { path: ADMIN_SETTINGS.replace(`${DASHBOARD_ROUTE}/`, ''), element: <Settings />, adminOnly: true },
+    ],
+  },
+]
+
+export default { publicRoutes, authRoutes }
+
+
+
+
+Содержимое файла: passes.api.js
+
+// src/services/api/passes.api.js
+export const PassesApi = (() => {
+  let id = 5;
+  let records = [
+    { id: 1, type: 'car', carBrand: 'Toyota', carModel: 'Camry', carPlate: 'A123BC', fullName: 'Иван Петров', date: '2025-10-08', reason: 'Совещание', status: 'approved', createdAt: '2025-10-06T09:12:00Z' },
+    { id: 2, type: 'foot', fullName: 'Мария Цветкова', date: '2025-10-09', reason: 'Собеседование', status: 'pending', createdAt: '2025-10-06T11:40:00Z' },
+    { id: 3, type: 'car', carBrand: 'BMW', carModel: 'X3', carPlate: 'K777KK', fullName: 'Никита Сидоров', date: '2025-10-10', reason: 'Поставка', status: 'rejected', createdAt: '2025-10-04T15:10:00Z' },
+    { id: 4, type: 'foot', fullName: 'Сергей Алексеев', date: '2025-10-07', reason: 'Экскурсия', status: 'approved', createdAt: '2025-10-05T12:05:00Z' },
+  ];
+  const counters = () => ({
+    approved: records.filter(r => r.status === 'approved').length,
+    rejected: records.filter(r => r.status === 'rejected').length,
+    pending: records.filter(r => r.status === 'pending').length,
+  });
+  return {
+    async listMine() { return [...records].sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||'')); },
+    async create(payload) { id+=1; const rec={ id, status:'pending', createdAt:new Date().toISOString(), ...payload }; records.unshift(rec); return rec; },
+    async listAll() { return [...records]; },
+    async updateStatus(id, status) { const i=records.findIndex(r=>r.id===id); if(i>=0) records[i]={...records[i], status}; return records[i]; },
+    stats() { return counters(); }
+  };
+})();
+
+
+
+
+Содержимое файла: UserStore.js
+
+import { makeAutoObservable } from 'mobx';
+import { saveToken, getToken, removeToken, parseUserFromToken, $host } from '@/http';
+import { registerApi, loginApi, logoutApi } from '@/http/userApi';
+
+export default class UserStore {
+  user = null;
+  isAuth = false;
+
+  constructor() { makeAutoObservable(this); }
+
+  setAuth(v) { this.isAuth = v; }
+  setUser(u) { this.user = u; }
+
+  get isAdmin() {
+    const roles = this.user?.roles || [];
+    return roles.includes('ROLE_ADMIN');
+  }
+
+  // вызывается при старте приложения
+  async checkOnStart() {
+    const token = getToken();
+    if (token) {
+      const u = parseUserFromToken(token);
+      if (u?.email) { this.setUser(u); this.setAuth(true); }
+      else removeToken();
+    }
+    // тихая попытка refresh — ок, если 403/401
+    try {
+      const resp = await $host.post('/api/v1/auth/refresh', {}, { withCredentials: true });
+      const newToken = resp?.data?.accessToken || resp?.data?.token;
+      if (newToken) {
+        saveToken(newToken);
+        const u2 = parseUserFromToken(newToken);
+        this.setUser(u2);
+        this.setAuth(true);
+      }
+    } catch (_) {}
+  }
+
+  // РЕГИСТРАЦИЯ
+  async register({ email, password, fullName }) {
+    const { data } = await registerApi({ email, password, fullName });
+    const token = data?.accessToken || data?.token;
+    if (token) {
+      saveToken(token);
+      const u = parseUserFromToken(token);
+      this.setUser(u);
+      this.setAuth(true);
+    }
+    return data;
+  }
+
+  // ЛОГИН
+  async login({ email, password }) {
+    const { data } = await loginApi({ email, password });
+    const token = data?.accessToken || data?.token;
+    if (token) {
+      saveToken(token);
+      const u = parseUserFromToken(token);
+      this.setUser(u);
+      this.setAuth(true);
+    }
+    return data;
+  }
+
+  // ВЫХОД
+  async logout() {
+    try { await logoutApi(); } catch (_) {}
+    removeToken();
+    this.setUser(null);
+    this.setAuth(false);
+  }
+}
+
+
+
+
+Содержимое файла: main.css
+
+.container{max-width:1100px;margin:24px auto;padding:0 16px}
+.topnav{position:sticky;top:0;z-index:10;display:flex;gap:16px;align-items:center;padding:12px 16px;background:rgba(17,18,24,.85);backdrop-filter:blur(6px);border-bottom:1px solid #222}
+.topnav .brand{font-weight:700}
+.topnav .links a{margin-right:14px;opacity:.9}
+.topnav .links a.active{color:#fff}
+.spacer{flex:1}
+.card{background:rgba(255,255,255,.03);border:1px solid #222;border-radius:14px;padding:16px;margin-bottom:16px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.row{display:flex;gap:10px;align-items:center}
+.field{display:flex;flex-direction:column;gap:6px}
+.input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #222;background:#0f1220;color:#eaeaea}
+.btn{padding:10px 14px;border-radius:12px;border:1px solid #222;background:#12182a;color:#fff;cursor:pointer}
+.btn--primary{background:linear-gradient(135deg,#60a5fa,#7c3aed)}
+.btn--ghost{background:transparent}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{padding:10px 12px;border-bottom:1px solid #222;text-align:left}
+.badge{padding:4px 8px;border-radius:10px;border:1px solid #222;font-size:12px}
+.badge--approved{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.35)}
+.badge--pending{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.35)}
+.badge--rejected{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35)}
+
+
+
+
+Содержимое файла: theme.css
+
+:root {
+  --bg: #0f1115;
+  --panel: #151922;
+  --panel-hover: #1b2030;
+  --muted: #8a94a7;
+  --text: #e6e9ef;
+  --primary: #6ea8fe;
+  --primary-700: #4e90ff;
+  --success: #38c793;
+  --warning: #ffcc66;
+  --danger: #ff7b7b;
+  --border: #253044;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --radius: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: radial-gradient(1200px 800px at 10% -10%, #1a2032 0%, #0f1115 55%);
+  color: var(--text);
+}
+
+/* scrollbars */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #253044;
+  border-radius: 8px;
+}
+
+/* layout helpers */
+.container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+}
+
+.card {
+  background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.cardHeader {
+  padding: 18px 20px 8px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardTitle {
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.cardBody {
+  padding: 18px 20px 20px 20px;
+}
+
+/* buttons */
+.btn {
+  appearance: none;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--text);
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .06s ease, background .2s ease, border-color .2s ease;
+}
+.btn:hover {
+  background: var(--panel-hover);
+  border-color: #2e3a53;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btnPrimary {
+  background: var(--primary);
+  border-color: #6ea8fe33;
+  color: #0e1220;
+}
+.btnPrimary:hover {
+  background: var(--primary-700);
+}
+.btnGhost {
+  background: transparent;
+}
+
+/* inputs */
+.input, .select, .date, .textarea {
+  width: 100%;
+  background: #0f141f;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  padding: 10px 12px;
+  outline: none;
+}
+.input:focus, .select:focus, .date:focus, .textarea:focus {
+  border-color: #385082;
+  box-shadow: 0 0 0 3px #38508240;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 720px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: .2px;
+  border: 1px solid var(--border);
+  background: #0e1524;
+}
+.badgeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--muted);
+}
+.badge--approved {
+  color: #0c2018;
+  background: #2ee6a41a;
+  border-color: #2ee6a440;
+}
+.badge--approved .badgeDot { background: var(--success); }
+.badge--pending {
+  color: #201d0c;
+  background: #ffd76a1a;
+  border-color: #ffd76a40;
+}
+.badge--pending .badgeDot { background: var(--warning); }
+.badge--rejected {
+  color: #260d0d;
+  background: #ff8a8a1a;
+  border-color: #ff8a8a40;
+}
+.badge--rejected .badgeDot { background: var(--danger); }
+
+/* table */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table th, .table td {
+  padding: 12px 10px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.table th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+}
+.table tr:hover td {
+  background: rgba(255,255,255,.02);
+}
+
+/* header */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 9;
+  backdrop-filter: blur(10px);
+  background: rgba(7, 10, 16, 0.6);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.headerInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+}
+.brand {
+  font-weight: 900;
+  letter-spacing: .4px;
+}
+
+
+
+
+Содержимое файла: consts.js
+
+// auth/public
+export const LOGIN_ROUTE = '/login'
+export const REGISTRATION_ROUTE = '/register'
+
+// общий дашборд-корень
+export const DASHBOARD_ROUTE = '/dashboard'
+
+// admin
+export const ADMIN_HOME = '/dashboard/admin'
+export const ADMIN_QUEUE = '/dashboard/admin/queue'
+export const ADMIN_APPROVED = '/dashboard/admin/approved'   // ← ЭТОГО НЕ ХВАТАЛО
+export const ADMIN_EMPLOYEES = '/dashboard/admin/employees'
+export const ADMIN_REPORTS = '/dashboard/admin/reports'
+export const ADMIN_SETTINGS = '/dashboard/admin/settings'
+
+// user
+export const USER_REQUEST = '/dashboard/request'
+export const USER_PASSES = '/dashboard/passes'
+export const USER_PROFILE = '/dashboard/profile'
+
+

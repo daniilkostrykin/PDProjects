@@ -1,0 +1,36 @@
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-store
+
+# Vite
+/dist
+/.vite
+
+# Git
+.git
+.gitignore
+
+# IDE/editor
+.vscode
+.idea
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests / coverage
+coverage
+**/__tests__
+**/*.test.*
+**/*.spec.*
+
+# Local env
+.env
+.env.*
+
+# Build artifacts
+build
+*.local
