@@ -6,12 +6,12 @@ import { Context } from '../../context';
 import classes from './Auth.module.css';
 
 
-import Brand from '../../components/auth/Brand/Brand';
-import FormInput from '../../components/auth/FormInput/FormInput';
-import SubmitButton from '../../components/auth/SubmitButton/SubmitButton';
-import AuthSwitcher from '../../components/auth/AuthSwitcher/AuthSwitcher';
-import ResetButton from '../../components/auth/ResetButton/ResetButton';
-import Toast from '../../components/auth/Toast/Toast';
+import Brand from '@/components/Auth/Brand/Brand';
+import FormInput from '@/components/Auth/FormInput/FormInput';
+import SubmitButton from '@/components/Auth/SubmitButton/SubmitButton';
+import AuthSwitcher from '@/components/Auth/AuthSwitcher/AuthSwitcher';
+import ResetButton from '@/components/Auth/ResetButton/ResetButton';
+import Toast from '@/components/Auth/Toast/Toast';
 
 
 const validateLogin = ({ email, password }) => {
