@@ -20,6 +20,10 @@ public class AdminSeeder implements CommandLineRunner {
         if (users.findByUsername("admin@local").isEmpty()) {
             var u = new User();
             u.setUsername("admin@local");
+            
+            // ➡️ ДОБАВЛЕНА ЭТА СТРОКА:
+            u.setEmail("admin@local"); 
+            
             u.setPasswordHash(encoder.encode("admin"));
             u.setEnabled(true);
             u.setRoles(Set.of(Role.ADMIN.name(), Role.USER.name()));
