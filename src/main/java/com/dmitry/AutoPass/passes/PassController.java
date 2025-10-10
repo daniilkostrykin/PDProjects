@@ -22,8 +22,7 @@ public class PassController {
     @PostMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<PassResponse> create(
             @Valid @RequestBody PassCreateRequest req,
-            @AuthenticationPrincipal(expression = "name") String principalName
-    ) {
+            @AuthenticationPrincipal String principalName) {
         log.info("CREATE: principal={}, type={}, date={}, fio={}",
                 principalName, req.type(), req.visitDate(), req.fullName());
         return ResponseEntity.ok(service.create(req, principalName));
@@ -31,11 +30,10 @@ public class PassController {
 
     @GetMapping(produces = "application/json")
     public Page<PassResponse> myList(
-            @RequestParam(required = false) String status,      // pending|approved|rejected
+            @RequestParam(required = false) String status, // pending|approved|rejected
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal(expression = "name") String principalName
-    ) {
+            @AuthenticationPrincipal String principalName) {
         return service.myList(principalName, status, PageRequest.of(page, size));
     }
 }

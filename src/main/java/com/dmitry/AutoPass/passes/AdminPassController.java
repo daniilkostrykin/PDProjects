@@ -5,13 +5,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/admin/passes")
 @RequiredArgsConstructor
-@PreAuthorize("hasAuthority('ADMIN') or hasRole('ADMIN')")
+// @PreAuthorize("hasAuthority('ADMIN') or hasRole('ADMIN')") // Временно
+// отключено для тестирования
 public class AdminPassController {
 
     private final PassService service;
@@ -25,8 +25,7 @@ public class AdminPassController {
     public Page<PassResponse> queue(
             @RequestParam(defaultValue = "PENDING") String status,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
-    ) {
+            @RequestParam(defaultValue = "20") int size) {
         return service.adminQueue(status, PageRequest.of(page, size));
     }
 

@@ -27,7 +27,8 @@ public class AuthService {
             throw new EmailAlreadyRegisteredException("Email already registered");
 
         var u = new User();
-        u.setUsername(req.getEmail());               // важный момент — username = email
+        u.setEmail(req.getEmail()); // устанавливаем email
+        u.setUsername(req.getEmail()); // важный момент — username = email
         u.setPasswordHash(passwordEncoder.encode(req.getPassword()));
         u.setEnabled(true);
         u.setRoles(Set.of(Role.USER.name()));
@@ -39,7 +40,7 @@ public class AuthService {
 
     /** Возвращаем доменную сущность для генерации JWT */
     public User authenticate(LoginRequest req) {
-        var user = users.findByUsername(req.getEmail())  // ищем по email
+        var user = users.findByUsername(req.getEmail()) // ищем по email
                 .orElseThrow(() -> new BadCredentialsException("User not found"));
         if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash()))
             throw new BadCredentialsException("Invalid credentials");

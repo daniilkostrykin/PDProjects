@@ -1,2 +1,5 @@
 package com.dmitry.AutoPass.passes;
-public enum PassType { CAR, PSH }
+
+public enum PassType {
+    CAR, PSH, VISITOR
+}

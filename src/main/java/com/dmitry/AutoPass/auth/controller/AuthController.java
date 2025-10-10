@@ -8,6 +8,7 @@ import jakarta.servlet.http.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
 import java.time.Duration;
@@ -69,10 +70,11 @@ public class AuthController {
     }
 
     // Если позже захочешь эндпоинт /refresh:
+    //ВКЛЮЧИТЬ ЗАЩИТУ 
     @PostMapping("/refresh")
-    public ResponseEntity<Map<String, String>> refresh(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<RefreshResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
         // 1) достаём refresh из cookie
-        String refresh = null;
+     /*    String refresh = null;
         if (request.getCookies() != null) {
             for (Cookie c : request.getCookies()) {
                 if ("refreshToken".equals(c.getName())) {
@@ -109,7 +111,10 @@ public class AuthController {
         var user = newToken.getUser();
         String access = jwtService.generateAccessToken(user);
 
-        return ResponseEntity.ok(Map.of("accessToken", access));
+        return ResponseEntity.ok(Map.of("accessToken", access));*/
+        RefreshResponse mockResponse = new RefreshResponse();
+
+        return ResponseEntity.ok(mockResponse);
     }
 
 }
