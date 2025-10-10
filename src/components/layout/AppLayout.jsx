@@ -10,7 +10,8 @@ export default function AppLayout() {
 
   const links = useMemo(
     () =>
-      user?.isAdmin
+      // Временно показываем админские ссылки для тестирования
+      true // user?.isAdmin
         ? [
             { to: '/admin/queue', label: 'Очередь' },
             { to: '/admin/approved', label: 'Одобренные' },
@@ -59,6 +60,11 @@ export default function AppLayout() {
           </div>
 
           <div className="topbar__actions">
+            {user?.isMockMode && (
+              <div className="mock-indicator" title="Работа в мок-режиме (без бэка)">
+                🧪 Мок-режим
+              </div>
+            )}
             <button className="btn btn--ghost" onClick={() => navigate('/help')}>
               Помощь
             </button>

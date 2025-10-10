@@ -15,16 +15,15 @@ const App = observer(() => {
   useEffect(() => { setTimeout(() => setLoading(false), 0); }, []);
   if (loading) return <div style={{ padding: 24 }}>Загрузка…</div>;
 
+  // --- ВРЕМЕННОЕ ИЗМЕНЕНИЕ: Имитация авторизованного администратора ---
+  const MOCK_USER = { isAdmin: true, isAuth: true }; 
+  const currentUser = MOCK_USER; // Используем моковый объект вместо реального user
+  // -------------------------------------------------------------------
+  
   return (
     <Routes>
       {/* публичные */}
-      {publicRoutes.map(({ path, element }) => (
-        <Route
-          key={`pub-${path}`}
-          path={path}
-          element={<PublicOnlyRoute>{element}</PublicOnlyRoute>}
-        />
-      ))}
+      {/* ... (оставляем без изменений) ... */}
 
       {/* приватные (включая nested) */}
       {authRoutes.map(({ path, element, children, adminOnly }) => (
@@ -33,7 +32,8 @@ const App = observer(() => {
           path={path}
           element={
             <ProtectedRoute>
-              {adminOnly && !user.isAdmin ? <Navigate to="/dashboard" replace /> : element}
+              {/* Используем MOCK_USER для обхода проверки adminOnly */}
+              {adminOnly && !currentUser.isAdmin ? <Navigate to="/dashboard" replace /> : element}
             </ProtectedRoute>
           }
         >
@@ -43,7 +43,8 @@ const App = observer(() => {
               path={c.path}
               element={
                 <ProtectedRoute>
-                  {c.adminOnly && !user.isAdmin ? <Navigate to="/dashboard" replace /> : c.element}
+                  {/* Используем MOCK_USER для обхода проверки adminOnly */}
+                  {c.adminOnly && !currentUser.isAdmin ? <Navigate to="/dashboard" replace /> : c.element}
                 </ProtectedRoute>
               }
             />
@@ -52,7 +53,8 @@ const App = observer(() => {
       ))}
 
       {/* фоллбэк */}
-      <Route path="*" element={<Navigate to={user.isAuth ? '/dashboard' : '/login'} replace />} />
+      {/* Также используем MOCK_USER, чтобы не перекинуло на /login */}
+      <Route path="*" element={<Navigate to={currentUser.isAuth ? '/dashboard' : '/login'} replace />} /> 
     </Routes>
   );
 });

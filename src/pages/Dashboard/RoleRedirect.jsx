@@ -5,9 +5,12 @@ import { ADMIN_HOME, USER_REQUEST } from '../../utils/consts'
 
 export default function RoleRedirect() {
   const { user } = useContext(Context)
-  const isAdmin = typeof user.isAdmin === 'boolean'
+  //ВКЛЮЧИТЬ ЗАЩИТУ 
+  /*const isAdmin = typeof user.isAdmin === 'boolean'
     ? user.isAdmin
     : Array.isArray(user.roles) && user.roles.includes('ROLE_ADMIN')
+*/
+  const isAdmin = true; // <-- ИЗМЕНЕНИЕ
 
   return <Navigate to={isAdmin ? ADMIN_HOME : USER_REQUEST} replace />
 }

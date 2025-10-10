@@ -5,10 +5,11 @@ import { Context } from '@/context';
 
 const ProtectedRoute = observer(({ children }) => {
   const { user } = useContext(Context);
-  const location = useLocation();
-  if (!user.isAuth) {
+ // const location = useLocation();
+  //ВКЛЮЧИТЬ ЗАЩИТУ 
+ /* if (!user.isAuth) {
     return <Navigate to="/login" state={{ from: location }} replace />;
-  }
+  }*/
   return children;
 });
 export default ProtectedRoute;
