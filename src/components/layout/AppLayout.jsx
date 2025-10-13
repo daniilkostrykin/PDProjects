@@ -2,30 +2,27 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useContext, useMemo } from 'react';
 import { Context } from '@/context';
-import { LOGIN_ROUTE } from '@/utils/consts';
+import { LOGIN_ROUTE, DASHBOARD_ROUTE, ADMIN_QUEUE, ADMIN_APPROVED, ADMIN_EMPLOYEES, ADMIN_REPORTS, ADMIN_SETTINGS, USER_REQUEST, USER_PASSES, USER_PROFILE } from '@/utils/consts';
 
 export default function AppLayout() {
   const { user } = useContext(Context);
   const navigate = useNavigate();
 
-  const links = useMemo(
-    () =>
-      // Временно показываем админские ссылки для тестирования
-      true // user?.isAdmin
-        ? [
-            { to: '/admin/queue', label: 'Очередь' },
-            { to: '/admin/approved', label: 'Одобренные' },
-            { to: '/admin/employees', label: 'Сотрудники' },
-            { to: '/admin/reports', label: 'Журналы' },
-            { to: '/admin/settings', label: 'Настройки' },
-          ]
-        : [
-            { to: '/request', label: 'Оформить пропуск' },
-            { to: '/my', label: 'Мои пропуска' },
-            { to: '/profile', label: 'Профиль' },
-          ],
-    [user?.isAdmin]
-  );
+  const links = useMemo(() => (
+    (true) // user?.isAdmin — временно показываем админские
+      ? [
+          { to: ADMIN_QUEUE, label: 'Очередь' },
+          { to: ADMIN_APPROVED, label: 'Одобренные' },
+          { to: ADMIN_EMPLOYEES, label: 'Сотрудники' },
+          { to: ADMIN_REPORTS, label: 'Журналы' },
+          { to: ADMIN_SETTINGS, label: 'Настройки' },
+        ]
+      : [
+          { to: USER_REQUEST, label: 'Оформить пропуск' },
+          { to: USER_PASSES, label: 'Мои пропуска' },
+          { to: USER_PROFILE, label: 'Профиль' },
+        ]
+  ), [user?.isAdmin]);
 
   const onLogout = async () => {
     try {
@@ -39,7 +36,7 @@ export default function AppLayout() {
     <>
       <header className="topbar">
         <div className="topbar__inner container">
-          <div className="navBrand">AutoPass</div>
+          <NavLink to={DASHBOARD_ROUTE} className="navBrand">AutoPass</NavLink>
 
           <nav className="nav">
             {links.map((l) => (
@@ -65,7 +62,7 @@ export default function AppLayout() {
                 🧪 Мок-режим
               </div>
             )}
-            <button className="btn btn--ghost" onClick={() => navigate('/help')}>
+            <button className="btn btn--ghost" onClick={() => navigate(ADMIN_REPORTS)}>
               Помощь
             </button>
             <button className="btn btn--primary" onClick={onLogout}>
