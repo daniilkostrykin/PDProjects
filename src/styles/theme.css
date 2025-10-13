@@ -130,7 +130,8 @@ body {
   border: 1px solid var(--border);
   border-radius: 10px;
   color: var(--text);
-  padding: 10px 12px;
+  padding: 8px 12px;
+  font-size: 14px;
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
 }
@@ -153,7 +154,7 @@ body {
   border-radius: 10px;
   background: #fff;
   color: var(--text);
-  padding: 10px 14px;
+  padding: 8px 14px;
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.06s, background 0.15s, border-color 0.15s,
@@ -163,6 +164,18 @@ body {
   justify-content: center;
   white-space: nowrap;
   max-width: 100%;
+}
+.btn--sm {
+  padding: 6px 10px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+.btn--secondary {
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+}
+.btn--secondary:hover {
+  background: #e5e7eb;
 }
 .btn:hover {
   background: #f8fafc;
@@ -180,6 +193,14 @@ body {
 .btn--primary:hover,
 .btnPrimary:hover {
   background: var(--primary-700);
+}
+.btn--danger {
+  background: var(--danger);
+  color: #fff;
+  border-color: #fecaca;
+}
+.btn--danger:hover {
+  background: #b91c1c;
 }
 .btn--ghost,
 .btnGhost {
@@ -203,10 +224,10 @@ body {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  padding: 12px 12px;
+  padding: 10px 12px;
 }
 .table td {
-  padding: 12px 12px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--border);
 }
 .table tbody tr:nth-child(odd) td {
@@ -395,4 +416,41 @@ body {
 /* у тебя уже есть .spacer {flex:1} — если нет, то: */
 .spacer {
   flex: 1;
+}
+
+/* --- Page header controls sizing (by content) --- */
+.page-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.page-actions .select,
+.page-actions .input,
+.page-actions .btn {
+  width: auto;
+}
+.page-actions .input {
+  min-width: 260px;
+}
+/* Добавьте это в конец вашего файла со стилями */
+
+.btn--pagination {
+  /* Уменьшаем внутренние отступы, чтобы кнопка стала компактнее */
+  padding: 4px 8px; 
+  
+  /* Устанавливаем нужный размер для стрелки */
+  font-size: 14px; 
+  
+  /* Делаем стрелку чуть жирнее, чтобы она не потерялась */
+  font-weight: 700;
+  
+  /* Убираем лишнюю высоту, чтобы кнопка была выровнена по центру текста */
+  line-height: 1;
+}
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }

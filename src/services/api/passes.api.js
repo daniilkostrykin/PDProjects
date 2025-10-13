@@ -1,82 +1,46 @@
 // src/services/api/passes.api.js
-export const PassesApi = (() => {
-  let id = 5;
-  let records = [
-    {
-      id: 1,
-      type: "car",
-      carBrand: "Toyota",
-      carModel: "Camry",
-      carPlate: "A123BC",
-      fullName: "Иван Петров",
-      date: "2025-10-08",
-      reason: "Совещание",
-      status: "approved",
-      createdAt: "2025-10-06T09:12:00Z",
-    },
-    {
-      id: 2,
-      type: "foot",
-      fullName: "Мария Цветкова",
-      date: "2025-10-09",
-      reason: "Собеседование",
-      status: "pending",
-      createdAt: "2025-10-06T11:40:00Z",
-    },
-    {
-      id: 3,
-      type: "car",
-      carBrand: "BMW",
-      carModel: "X3",
-      carPlate: "K777KK",
-      fullName: "Никита Сидоров",
-      date: "2025-10-10",
-      reason: "Поставка",
-      status: "rejected",
-      createdAt: "2025-10-04T15:10:00Z",
-    },
-    {
-      id: 4,
-      type: "foot",
-      fullName: "Сергей Алексеев",
-      date: "2025-10-07",
-      reason: "Экскурсия",
-      status: "approved",
-      createdAt: "2025-10-05T12:05:00Z",
-    },
-  ];
-  const counters = () => ({
-    approved: records.filter((r) => r.status === "approved").length,
-    rejected: records.filter((r) => r.status === "rejected").length,
-    pending: records.filter((r) => r.status === "pending").length,
-  });
-  return {
-    async listMine() {
-      return [...records].sort((a, b) =>
-        (b.createdAt || "").localeCompare(a.createdAt || "")
-      );
-    },
-    async create(payload) {
-      id += 1;
-      const rec = {
-        id,
-        status: "pending",
-        createdAt: new Date().toISOString(),
-        ...payload,
-      };
-      records.unshift(rec);
-      return rec;
-    },
-    async listAll() {
-      return [...records];
-    },
-    async updateStatus(id, status) {
-      const i = records.findIndex((r) => r.id === id);
-      if (i >= 0) records[i] = { ...records[i], status };
-      return records[i];
-    },
-    stats() {
-      return counters();
-    },
-  };
-})();
+import { http } from "@/http";
+
+export const PassesApi = {
+  async listMine(params = {}) {
+    const { status, page = 0, size = 20 } = params;
+    const query = new URLSearchParams();
+    if (status) query.append("status", status);
+    query.append("page", page);
+    query.append("size", size);
+
+    const response = await http.get(`/api/v1/passes?${query}`);
+    return response.data;
+  },
+
+  async create(payload) {
+    const response = await http.post("/api/v1/passes", payload);
+    return response.data;
+  },
+
+  async listAll(params = {}) {
+    const { status = "PENDING", page = 0, size = 20 } = params;
+    const query = new URLSearchParams();
+    query.append("status", status);
+    query.append("page", page);
+    query.append("size", size);
+
+    const response = await http.get(`/api/v1/admin/passes?${query}`);
+    return response.data.content || response.data;
+  },
+
+  async approve(id) {
+    const response = await http.post(`/api/v1/admin/passes/${id}/approve`);
+    return response.data;
+  },
+
+  async reject(id) {
+    const response = await http.post(`/api/v1/admin/passes/${id}/reject`);
+    return response.data;
+  },
+
+  async stats() {
+    const response = await http.get("/api/v1/admin/passes/stats");
+    return response.data;
+  },
+};
