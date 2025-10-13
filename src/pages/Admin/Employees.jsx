@@ -99,32 +99,38 @@ export default function Employees() {
     <div className="page">
       <div className="page-header">
         <div className="page-title">
-          <h2>Управление сотрудниками</h2>
+          <h2 style={{display: 'flex', alignItems: 'baseline',  gap: '16px'}}>
+            Управление сотрудниками
+            <button className="btn btn--primary" style={{marginTop: '3px'}} onClick={handleAddEmployee}>
+              Изменить сотрудников
+            </button>
+          </h2>
           <p className="page-subtitle">
             Добавление, редактирование и управление сотрудниками предприятия
           </p>
         </div>
-        <button className="btn btn--primary" onClick={handleAddEmployee}>
-          + Добавить сотрудника
-        </button>
       </div>
 
       {/* Статистика */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-number">{stats.total || 0}</div>
+      <div className="grid4" style={{marginBottom:12}}>
+        <div className="stat">
+          <div className="statIcon" aria-hidden>👥</div>
+          <div className="stat-num">{stats.total || 0}</div>
           <div className="stat-label">Всего сотрудников</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-number">{stats.active || 0}</div>
+        <div className="stat">
+          <div className="statIcon" aria-hidden>✅</div>
+          <div className="stat-num">{stats.active || 0}</div>
           <div className="stat-label">Активных</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-number">{stats.activePasses || 0}</div>
+        <div className="stat">
+          <div className="statIcon" aria-hidden>🎫</div>
+          <div className="stat-num">{stats.activePasses || 0}</div>
           <div className="stat-label">Активных пропусков</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-number">{stats.blockedPasses || 0}</div>
+        <div className="stat">
+          <div className="statIcon" aria-hidden>🔒</div>
+          <div className="stat-num">{stats.blockedPasses || 0}</div>
           <div className="stat-label">Заблокированных</div>
         </div>
       </div>

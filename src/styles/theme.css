@@ -71,6 +71,11 @@ body {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
+.grid4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
 .muted {
   color: var(--muted);
 }
@@ -229,6 +234,7 @@ body {
 .table td {
   padding: 10px 12px;
   border-bottom: 1px solid var(--border);
+  vertical-align: middle;
 }
 .table tbody tr:nth-child(odd) td {
   background: #fcfdff;
@@ -277,6 +283,22 @@ body {
   background: #fef2f2;
   border-color: #fecaca;
 }
+.badge--success {
+  color: #065f46;
+  background: #ecfdf5;
+  border-color: #bbf7d0;
+}
+.badge--warning {
+  color: #7c2d12;
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+.badge--danger {
+  color: #7f1d1d;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
 .stat {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -433,18 +455,103 @@ body {
 .page-actions .input {
   min-width: 260px;
 }
+
+/* --- Employee filters layout --- */
+.filters-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.filters-layout {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: start;
+}
+
+.filters-left {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.filters-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-self: start;
+}
+
+.active-filters {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.active-filters-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.filter-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: #f3f4f6;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.filter-tag button {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.filter-tag button:hover {
+  color: var(--danger);
+}
 /* Добавьте это в конец вашего файла со стилями */
 
 .btn--pagination {
   /* Уменьшаем внутренние отступы, чтобы кнопка стала компактнее */
-  padding: 4px 8px; 
-  
+  padding: 4px 8px;
+
   /* Устанавливаем нужный размер для стрелки */
-  font-size: 14px; 
-  
+  font-size: 14px;
+
   /* Делаем стрелку чуть жирнее, чтобы она не потерялась */
   font-weight: 700;
-  
+
   /* Убираем лишнюю высоту, чтобы кнопка была выровнена по центру текста */
   line-height: 1;
 }
@@ -453,4 +560,147 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
+}
+
+.full-row {
+  grid-column: 1 / -1;
+}
+
+.table-container {
+  /* Это свойство — ключ к решению. 
+     Оно добавит горизонтальный скроллбар, ТОЛЬКО если таблица не помещается по ширине. */
+  overflow-x: auto;
+}
+
+/* Добавьте в theme.css */
+.dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: 100%; /* Появляется сразу под кнопкой */
+  margin-top: 4px; /* Небольшой отступ сверху */
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 6px;
+  z-index: 10;
+  min-width: 180px; /* Чтобы текст кнопок не переносился */
+  display: flex;
+  flex-direction: column;
+  gap: 4px; /* Отступ между кнопками */
+}
+
+.dropdown-menu .btn {
+  width: 100%;
+  justify-content: flex-start; /* Выравнивание текста в кнопках по левому краю */
+}
+/* Добавьте это в ваш theme.css */
+.table--compact th,
+.table--compact td {
+  padding: 8px 10px; /* Было 10px 12px */
+  font-size: 13px; /* Было 14px (по умолчанию) */
+}
+
+/* Можно сделать колонку с действиями еще компактнее */
+.table--compact .action-buttons-cell {
+  padding-right: 8px;
+  padding-left: 8px;
+}
+/* Добавьте это в конец theme.css */
+
+/* Скрываем на небольших ноутбуках и планшетах */
+@media (max-width: 1400px) {
+  .hide-on-laptop {
+    display: none;
+  }
+}
+
+/* Можно добавить еще один уровень для планшетов */
+@media (max-width: 992px) {
+  .hide-on-tablet {
+    display: none; /* Сюда можно добавить, например, Email */
+  }
+}
+
+/* Стили для таблицы сотрудников */
+.table th {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: #374151;
+  text-align: center;
+  vertical-align: middle;
+  background-color: #f8fafc;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.table td {
+  font-family: "Montserrat", sans-serif;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 14px;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table--compact th,
+.table--compact td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Специальные стили для ячеек с данными сотрудников */
+.employee-info {
+  font-family: "Montserrat", sans-serif;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.employee-name {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: #111827;
+}
+
+.employee-phone {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.employee-photo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+}
+
+/* Стили для детальной информации */
+.employee-details {
+  font-family: "Montserrat", sans-serif;
+}
+
+.employee-details strong {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  color: #374151;
+}
+
+.pass-code {
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+  font-size: 13px;
+  background-color: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #374151;
 }
