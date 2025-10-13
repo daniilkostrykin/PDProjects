@@ -1,3 +1,10 @@
+-- Migration V2: add invited_by and valid period columns
+ALTER TABLE pass_requests
+    ADD COLUMN IF NOT EXISTS invited_by varchar(255);
+ALTER TABLE pass_requests
+    ADD COLUMN IF NOT EXISTS valid_from timestamp null;
+ALTER TABLE pass_requests
+    ADD COLUMN IF NOT EXISTS valid_to timestamp null;
 
 CREATE SCHEMA IF NOT EXISTS auth;
 CREATE EXTENSION IF NOT EXISTS citext;

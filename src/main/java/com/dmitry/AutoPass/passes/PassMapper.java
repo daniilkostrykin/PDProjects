@@ -14,6 +14,9 @@ public class PassMapper {
         e.setCarBrand(r.carBrand());
         e.setCarModel(r.carModel());
         e.setCarPlate(r.carPlate());
+        e.setInvitedBy(r.invitedBy());
+        e.setValidFrom(r.validFrom());
+        e.setValidTo(r.validTo());
         return e;
     }
 
@@ -28,7 +31,9 @@ public class PassMapper {
                 e.getCarModel(),
                 e.getCarPlate(),
                 e.getStatus(),
-                e.getCreatedAt()
-        );
+                e.getCreatedAt(),
+                e.getInvitedBy(),
+                e.getValidFrom(),
+                e.getValidTo());
     }
 }
