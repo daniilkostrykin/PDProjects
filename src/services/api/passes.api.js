@@ -1,5 +1,5 @@
 // src/services/api/passes.api.js
-import { http } from "@/http";
+import { $host, $authHost } from "@/http";
 
 export const PassesApi = {
   async listMine(params = {}) {
@@ -9,12 +9,12 @@ export const PassesApi = {
     query.append("page", page);
     query.append("size", size);
 
-    const response = await http.get(`/api/v1/passes?${query}`);
+    const response = await $authHost.get(`/api/v1/passes?${query}`);
     return response.data;
   },
 
   async create(payload) {
-    const response = await http.post("/api/v1/passes", payload);
+    const response = await $authHost.post("/api/v1/passes", payload);
     return response.data;
   },
 
@@ -25,22 +25,22 @@ export const PassesApi = {
     query.append("page", page);
     query.append("size", size);
 
-    const response = await http.get(`/api/v1/admin/passes?${query}`);
+    const response = await $authHost.get(`/api/v1/admin/passes?${query}`);
     return response.data.content || response.data;
   },
 
   async approve(id) {
-    const response = await http.post(`/api/v1/admin/passes/${id}/approve`);
+    const response = await $authHost.post(`/api/v1/admin/passes/${id}/approve`);
     return response.data;
   },
 
   async reject(id) {
-    const response = await http.post(`/api/v1/admin/passes/${id}/reject`);
+    const response = await $authHost.post(`/api/v1/admin/passes/${id}/reject`);
     return response.data;
   },
 
   async stats() {
-    const response = await http.get("/api/v1/admin/passes/stats");
+    const response = await $authHost.get("/api/v1/admin/passes/stats");
     return response.data;
   },
 };

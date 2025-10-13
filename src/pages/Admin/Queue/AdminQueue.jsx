@@ -161,9 +161,9 @@ export default function AdminQueue() {
         </div>
         <div className="page-actions row" style={{gap:8}}>
           <select value={dateFilter} onChange={(e)=> {setPage(1); setDateFilter(e.target.value)}} className="select">
-            <option value="TODAY">На сегодня</option>
-            <option value="TOMORROW">На завтра</option>
-            <option value="WEEK">На неделю</option>
+            <option value="TODAY">Сегодня</option>
+            <option value="TOMORROW">Завтра</option>
+            <option value="WEEK">Неделя</option>
             <option value="ALL">Все даты</option>
           </select>
           <input className="input" placeholder="Поиск по ФИО, авто или причине" value={search} onChange={(e)=> {setPage(1); setSearch(e.target.value)}} />
