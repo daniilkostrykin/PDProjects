@@ -3,12 +3,24 @@ import { useState } from 'react';
 
 function EventTypeBadge({ eventType }) {
   const typeMap = {
-    'ENTRY': { text: 'Вход', class: 'success' },
-    'EXIT': { text: 'Выход', class: 'info' }
+    'ENTRY': { text: 'Вход', class: 'success', borderColor: '#bbf7d0', textColor: '#10b981' },
+    'EXIT': { text: 'Выход', class: 'danger', borderColor: '#fecaca', textColor: '#dc2626' }
   };
   
-  const typeInfo = typeMap[eventType] || { text: eventType, class: 'default' };
-  return <span className={`badge badge--${typeInfo.class}`}>{typeInfo.text}</span>;
+  const typeInfo = typeMap[eventType] || { text: eventType, class: 'default', borderColor: '#6b7280', textColor: '#6b7280' };
+  return (
+    <span 
+      className={`badge badge--${typeInfo.class}`}
+      style={{
+        backgroundColor: 'transparent',
+        border: `2px solid ${typeInfo.borderColor}`,
+        color: typeInfo.textColor,
+        fontWeight: '600'
+      }}
+    >
+      {typeInfo.text}
+    </span>
+  );
 }
 
 function AccessStatusBadge({ status, denialReason }) {
@@ -26,12 +38,13 @@ function AccessStatusBadge({ status, denialReason }) {
     'TIME_RESTRICTION': 'Время доступа ограничено'
   };
   
-  const reasonText = reasonMap[denialReason] || denialReason || 'Неизвестная причина';
+  const reasonText = reasonMap[denialReason] || 'Неизвестная причина';
   return <span className="badge badge--danger" title={reasonText}>Отказано</span>;
 }
 
 export default function AccessLogsTable({ logs, loading = false }) {
   const [selectedLog, setSelectedLog] = useState(null);
+  const [selectedRowRef, setSelectedRowRef] = useState(null);
 
   const formatDateTime = (dateString) => {
     return new Date(dateString).toLocaleString('ru-RU', {
@@ -42,6 +55,40 @@ export default function AccessLogsTable({ logs, loading = false }) {
       minute: '2-digit',
       second: '2-digit'
     });
+  };
+
+  // Перевод системных кодов причин отказа на человеческий язык
+  const getHumanReadableDenialReason = (reason) => {
+    const reasonMap = {
+      'EMPLOYEE_FIRED': 'Сотрудник уволен',
+      'PASS_BLOCKED': 'Пропуск заблокирован',
+      'PASS_NOT_FOUND': 'Пропуск не найден в системе',
+      'PASS_EXPIRED': 'Пропуск просрочен',
+      'EMPLOYEE_INACTIVE': 'Сотрудник неактивен',
+      'ACCESS_DENIED': 'Доступ запрещен',
+      'INVALID_PASS': 'Недействительный пропуск',
+      'TIME_RESTRICTION': 'Ограничение по времени',
+      'AREA_RESTRICTION': 'Ограничение по зоне',
+      'SECURITY_ALERT': 'Сигнал безопасности'
+    };
+    return reasonMap[reason] || reason;
+  };
+
+  // Получение описания причины отказа
+  const getDenialDescription = (reason) => {
+    const descriptionMap = {
+      'EMPLOYEE_FIRED': 'Пропуск данного сотрудника был аннулирован.',
+      'PASS_BLOCKED': 'Пропуск временно заблокирован администратором.',
+      'PASS_NOT_FOUND': 'Пропуск не зарегистрирован в системе.',
+      'PASS_EXPIRED': 'Срок действия пропуска истек.',
+      'EMPLOYEE_INACTIVE': 'Учетная запись сотрудника деактивирована.',
+      'ACCESS_DENIED': 'Доступ запрещен по политике безопасности.',
+      'INVALID_PASS': 'Пропуск поврежден или подделан.',
+      'TIME_RESTRICTION': 'Доступ разрешен только в определенное время.',
+      'AREA_RESTRICTION': 'Доступ к данной зоне запрещен.',
+      'SECURITY_ALERT': 'Сработала система безопасности.'
+    };
+    return descriptionMap[reason] || 'Причина отказа не указана.';
   };
 
   const formatTime = (dateString) => {
@@ -83,135 +130,120 @@ export default function AccessLogsTable({ logs, loading = false }) {
                 </td>
               </tr>
             ) : (
-              logs.map(log => (
-                <tr key={log.id} className={log.accessStatus === 'DENIED' ? 'row--warning' : ''}>
-                  <td>
-                    <div className="datetime-cell">
-                      <div className="datetime-date">
-                        {new Date(log.timestamp).toLocaleDateString('ru-RU')}
+              logs.map(log => {
+                // Определяем аномалии для выделения
+                const isUnknownEmployee = log.employeeName === 'Неизвестный' || log.employeeName === 'Unknown';
+                
+                return (
+                  <tr 
+                    key={log.id} 
+                    className={isUnknownEmployee ? 'row--anomaly row--unknown' : ''}
+                    style={{
+                      borderLeft: isUnknownEmployee ? '4px solid #dc2626' : '4px solid transparent',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <td>
+                      <div className="datetime-cell">
+                        <div className="datetime-date">
+                          {new Date(log.timestamp).toLocaleDateString('ru-RU')}
+                        </div>
+                        <div className="datetime-time">
+                          {formatTime(log.timestamp)}
+                        </div>
                       </div>
-                      <div className="datetime-time">
-                        {formatTime(log.timestamp)}
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span className="checkpoint-name">{log.checkpointName}</span>
-                  </td>
-                  <td>
-                    <div className="employee-info">
-                      {log.photoUrl && (
-                        <img 
-                          src={log.photoUrl} 
-                          alt={log.employeeName}
-                          className="employee-photo employee-photo--sm"
-                          onError={(e) => e.target.style.display = 'none'}
-                        />
-                      )}
-                      <div>
-                        <div className="employee-name">{log.employeeName}</div>
-                        {log.department && (
-                          <div className="employee-department">{log.department}</div>
+                    </td>
+                    <td>
+                      <span className="checkpoint-name">{log.checkpointName}</span>
+                    </td>
+                    <td>
+                      <div className="employee-info">
+                        {log.photoUrl && (
+                          <img 
+                            src={log.photoUrl} 
+                            alt={log.employeeName}
+                            className="employee-photo employee-photo--sm"
+                            onError={(e) => e.target.style.display = 'none'}
+                          />
                         )}
+                        <div>
+                          <div className="employee-name" style={{
+                            color: isUnknownEmployee ? '#dc2626' : 'inherit',
+                            fontWeight: isUnknownEmployee ? '600' : 'normal'
+                          }}>
+                            {log.employeeName}
+                            {isUnknownEmployee && <span style={{marginLeft: '8px', fontSize: '12px'}}>⚠️</span>}
+                          </div>
+                          {log.department && (
+                            <div className="employee-department">{log.department}</div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td>
-                    <code className="pass-code">{log.passCode}</code>
-                  </td>
-                  <td>
-                    <EventTypeBadge eventType={log.eventType} />
-                  </td>
-                  <td>
-                    <AccessStatusBadge 
-                      status={log.accessStatus} 
-                      denialReason={log.denialReason}
-                    />
-                  </td>
-                  <td>
-                    {log.department || '-'}
-                  </td>
-                  <td>
-                    <button 
-                      className="btn btn--sm btn--info"
-                      onClick={() => setSelectedLog(log)}
-                      title="Подробности"
-                    >
-                      👁️
-                    </button>
-                  </td>
-                </tr>
-              ))
+                    </td>
+                    <td>
+                      <code className="pass-code">{log.passCode}</code>
+                    </td>
+                    <td>
+                      <EventTypeBadge eventType={log.eventType} />
+                    </td>
+                    <td>
+                      <AccessStatusBadge 
+                        status={log.accessStatus} 
+                        denialReason={log.denialReason}
+                      />
+                    </td>
+                    <td>
+                      {log.department || '-'}
+                    </td>
+                    <td>
+                      {log.accessStatus === 'DENIED' && log.denialReason && (
+                        <button 
+                          className="btn btn--sm btn--info"
+                          onClick={(e) => {
+                            setSelectedLog(log);
+                            setSelectedRowRef(e.target.closest('tr'));
+                          }}
+                          title="Подробности отказа"
+                        >
+                          👁️
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
       </div>
 
-      {/* Модальное окно с подробностями */}
-      {selectedLog && (
-        <div className="modal-overlay">
-          <div className="modal modal--sm">
-            <div className="modal-header">
-              <h3>Подробности события</h3>
-              <button 
-                className="btn btn--ghost" 
-                onClick={() => setSelectedLog(null)}
-              >
-                ×
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="detail-grid">
-                <div className="detail-item">
-                  <label>Время события:</label>
-                  <span>{formatDateTime(selectedLog.timestamp)}</span>
-                </div>
-                <div className="detail-item">
-                  <label>КПП:</label>
-                  <span>{selectedLog.checkpointName}</span>
-                </div>
-                <div className="detail-item">
-                  <label>Сотрудник:</label>
-                  <span>{selectedLog.employeeName}</span>
-                </div>
-                <div className="detail-item">
-                  <label>Код пропуска:</label>
-                  <span><code>{selectedLog.passCode}</code></span>
-                </div>
-                <div className="detail-item">
-                  <label>Тип события:</label>
-                  <span>
-                    <EventTypeBadge eventType={selectedLog.eventType} />
-                  </span>
-                </div>
-                <div className="detail-item">
-                  <label>Статус доступа:</label>
-                  <span>
-                    <AccessStatusBadge 
-                      status={selectedLog.accessStatus} 
-                      denialReason={selectedLog.denialReason}
-                    />
-                  </span>
-                </div>
-                {selectedLog.denialReason && (
-                  <div className="detail-item">
-                    <label>Причина отказа:</label>
-                    <span className="denial-reason">{selectedLog.denialReason}</span>
-                  </div>
-                )}
-                <div className="detail-item">
-                  <label>Отдел:</label>
-                  <span>{selectedLog.department || '-'}</span>
-                </div>
+      {/* Боковое окно с причиной отказа */}
+      {selectedLog && selectedLog.denialReason && selectedRowRef && (
+        <div className="side-panel-overlay" onClick={() => {
+          setSelectedLog(null);
+          setSelectedRowRef(null);
+        }}>
+          <div 
+            className="side-panel" 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'fixed',
+              top: '20px',
+              right: '20px',
+              zIndex: 1000
+            }}
+          >
+            <div className="denial-callout">
+              <div className="denial-callout-header">
+                <span className="denial-icon">🚫</span>
+                <span className="denial-title">Доступ запрещен</span>
               </div>
-            </div>
-            <div className="modal-footer">
-              <button 
-                className="btn btn--primary" 
-                onClick={() => setSelectedLog(null)}
-              >
-                Закрыть
-              </button>
+              <div className="denial-reason">
+                {getHumanReadableDenialReason(selectedLog.denialReason)}
+              </div>
+              <div className="denial-description">
+                {getDenialDescription(selectedLog.denialReason)}
+              </div>
             </div>
           </div>
         </div>

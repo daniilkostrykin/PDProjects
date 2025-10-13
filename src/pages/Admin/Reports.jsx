@@ -90,22 +90,7 @@ export default function Reports() {
             Просмотр событий прохода через КПП, статистика и экспорт данных
           </p>
         </div>
-        <div className="page-actions">
-          <button 
-            className="btn btn--secondary" 
-            onClick={handleRefresh}
-            disabled={loading}
-          >
-            🔄 Обновить
-          </button>
-          <button 
-            className="btn btn--primary" 
-            onClick={handleExportCSV}
-            disabled={exporting || loading}
-          >
-            {exporting ? 'Экспорт...' : '📊 Экспорт CSV'}
-          </button>
-        </div>
+       
       </div>
 
       {/* Статистика */}
