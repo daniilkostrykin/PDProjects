@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PassesApi } from '@/services/api/passes.api';
 import { EmployeesApi } from '@/services/api/employees.api';
 import { AccessLogsApi } from '@/services/api/access-logs.api';
 
 export default function AdminKpis() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     pendingPasses: 0,
     totalPasses: 0,
@@ -66,30 +68,65 @@ export default function AdminKpis() {
 
   return (
     <div className="grid3">
-      <div className="stat">
+      <button
+        type="button"
+        className={"stat stat--clickable" + (stats.pendingPasses > 0 ? " stat--highlight" : "")}
+        onClick={() => navigate('/dashboard/admin/queue')}
+        title="Перейти в очередь"
+      >
+        <div className="statIcon" aria-hidden>🕔</div>
         <div className="stat-num">{stats.pendingPasses}</div>
         <div className="stat-label">На рассмотрении</div>
-      </div>
-      <div className="stat">
+        <div className="statHint">нажмите, чтобы перейти</div>
+      </button>
+
+      <button
+        type="button"
+        className="stat stat--clickable"
+        onClick={() => navigate('/dashboard/admin/employees')}
+        title="Список сотрудников"
+      >
+        <div className="statIcon" aria-hidden>👥</div>
         <div className="stat-num">{stats.totalEmployees}</div>
         <div className="stat-label">Сотрудников</div>
-      </div>
+        <div className="statHint">открыть раздел</div>
+      </button>
+
       <div className="stat">
+        <div className="statIcon" aria-hidden>✅</div>
         <div className="stat-num">{stats.approvalRate}%</div>
-        <div className="stat-label">Одобрено</div>
+        <div className="stat-label">Одобрено <span className="muted">(за период)</span></div>
       </div>
-      <div className="stat">
+
+      <button
+        type="button"
+        className="stat stat--clickable"
+        onClick={() => navigate('/dashboard/admin/employees?filter=activePasses')}
+        title="Сотрудники с активными пропусками"
+      >
+        <div className="statIcon" aria-hidden>🎫</div>
         <div className="stat-num">{stats.activePasses}</div>
         <div className="stat-label">Активных пропусков</div>
-      </div>
+        <div className="statHint">показать список</div>
+      </button>
+
       <div className="stat">
+        <div className="statIcon" aria-hidden>📅</div>
         <div className="stat-num">{stats.todayEvents}</div>
-        <div className="stat-label">Событий сегодня</div>
+        <div className="stat-label">Событий <span className="muted">(сегодня)</span></div>
       </div>
-      <div className="stat">
+
+      <button
+        type="button"
+        className="stat stat--clickable"
+        onClick={() => navigate('/dashboard/admin/reports')}
+        title="Журналы и отчёты"
+      >
+        <div className="statIcon" aria-hidden>📊</div>
         <div className="stat-num">{stats.totalPasses}</div>
-        <div className="stat-label">Всего заявок</div>
-      </div>
+        <div className="stat-label">Всего заявок <span className="muted">(за период)</span></div>
+        <div className="statHint">перейти к журналам</div>
+      </button>
     </div>
   );
 }

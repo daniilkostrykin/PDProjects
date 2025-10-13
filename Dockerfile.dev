@@ -1,0 +1,19 @@
+# Файл: frontend/Dockerfile.dev
+
+# Используем базовый образ Node.js
+FROM node:20-alpine
+
+# Устанавливаем рабочую директорию
+WORKDIR /app
+
+# Копируем только package.json для установки зависимостей
+# Это ускорит пересборку, если зависимости не менялись
+COPY package*.json ./
+RUN npm install
+
+# Открываем порт для Vite
+EXPOSE 5173
+
+# Команда для запуска будет передана из docker-compose.override.yml
+# Но можно указать и здесь для ясности
+# CMD ["npm", "run", "dev"]
