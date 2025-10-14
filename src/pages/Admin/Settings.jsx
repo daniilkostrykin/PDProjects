@@ -34,15 +34,32 @@ export default function Settings() {
       </div>
 
       <div className="settings-container">
-        <div className="settings-tabs">
+        <div className="settings-tabs" style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, minmax(160px, 1fr))',
+          gap: 12,
+          marginBottom: 16
+        }}>
           {tabs.map(tab => (
-            <button
+            <div
               key={tab.id}
-              className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
+              role="button"
+              tabIndex={0}
               onClick={() => setActiveTab(tab.id)}
+              onKeyDown={(e) => { if (e.key === 'Enter') setActiveTab(tab.id) }}
+              className="stat"
+              style={{
+                cursor: 'pointer',
+                borderColor: activeTab === tab.id ? 'var(--primary)' : 'var(--border)',
+                boxShadow: activeTab === tab.id ? '0 0 0 2px rgba(59,130,246,0.15)' : 'var(--shadow)'
+              }}
+              title={tab.label}
             >
-              {tab.label}
-            </button>
+              <div className="statIcon" aria-hidden>
+                {tab.id === 'system' ? '⚙️' : tab.id === 'integrations' ? '🔗' : '📦'}
+              </div>
+              <div className="stat-num" style={{ fontSize: 16, fontWeight: 700 }}>{tab.label}</div>
+            </div>
           ))}
         </div>
 
@@ -120,31 +137,39 @@ function IntegrationsSettings() {
         </button>
       </div>
 
-      <div className="integrations-grid">
+      <div className="integrations-grid" style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: 12
+      }}>
         {integrations.map(integration => (
-          <div key={integration.id} className="integration-card">
-            <div className="integration-header">
+          <div
+            key={integration.id}
+            className="card integration-card"
+            style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
+          >
+            <div className="integration-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h4>{integration.name}</h4>
               {getStatusBadge(integration.status)}
             </div>
-            <div className="integration-details">
-              <div className="detail-item">
+            <div className="integration-details" style={{ display: 'grid', gap: 8 }}>
+              <div className="detail-item" style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 8 }}>
                 <label>Тип:</label>
                 <span>{getTypeLabel(integration.type)}</span>
               </div>
-              <div className="detail-item">
+              <div className="detail-item" style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 8 }}>
                 <label>Endpoint:</label>
                 <span className="endpoint">{integration.endpoint}</span>
               </div>
-              <div className="detail-item">
+              <div className="detail-item" style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 8 }}>
                 <label>Последняя синхронизация:</label>
                 <span>{formatDateTime(integration.lastSync)}</span>
               </div>
             </div>
-            <div className="integration-actions">
-              <button className="btn btn--sm btn--primary">Тест</button>
-              <button className="btn btn--sm btn--secondary">Настройки</button>
-              <button className="btn btn--sm btn--danger">Удалить</button>
+            <div className="integration-actions" style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+              <button className="btn btn--sm btn--primary" title="Проверить подключение">Тест</button>
+              <button className="btn btn--sm btn--secondary" title="Открыть настройки">Настройки</button>
+              <button className="btn btn--sm btn--danger" title="Удалить интеграцию">Удалить</button>
             </div>
           </div>
         ))}
