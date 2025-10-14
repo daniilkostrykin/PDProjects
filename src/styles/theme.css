@@ -313,19 +313,28 @@ body {
   display: grid;
   grid-template-rows: auto 1fr auto auto;
   gap: 6px;
+  text-align: center;
+  align-items: center;
+  justify-items: center;
 }
 .stat-num {
   font-size: 28px;
   font-weight: 800;
   letter-spacing: 0.2px;
+  text-align: center;
 }
 .stat-label {
   margin-top: 6px;
   color: var(--muted);
+  text-align: center;
 }
 .statIcon {
   font-size: 18px;
   opacity: 0.8;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .statHint {
   opacity: 0;

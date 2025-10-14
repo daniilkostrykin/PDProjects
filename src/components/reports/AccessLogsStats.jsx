@@ -137,6 +137,9 @@ export default function AccessLogsStats({ stats, loading = false }) {
                 'PASS_NOT_FOUND': 'Пропуск не найден',
                 'PASS_EXPIRED': 'Пропуск просрочен',
                 'PASS_BLOCKED': 'Пропуск заблокирован',
+                'EMPLOYEE_FIRED': 'Сотрудник уволен',
+                'EMPLOYEE_ON_LEAVE': 'Сотрудник в отпуске',
+                'EMPLOYEE_INACTIVE': 'Сотрудник неактивен',
                 'INVALID_TIME': 'Неверное время доступа',
                 'ACCESS_DENIED': 'Доступ запрещён',
                 'UNKNOWN_ERROR': 'Неизвестная ошибка'

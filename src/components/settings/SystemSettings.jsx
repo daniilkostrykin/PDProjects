@@ -20,16 +20,8 @@ export default function SystemSettings() {
     requirePasswordChange: false,
     passwordMinLength: 8,
     
-    // Настройки интеграций
-    enableCheckpointIntegration: true,
-    checkpointApiUrl: 'http://localhost:8080/api/checkpoints',
-    enableLprIntegration: false,
-    lprApiUrl: '',
-    
-    // Настройки резервного копирования
-    autoBackupEnabled: true,
-    backupFrequency: 'daily',
-    backupRetentionDays: 30
+    // Прочее
+    // Интеграции и Резервные копии вынесены в отдельные вкладки
   });
 
   const [loading, setLoading] = useState(false);
@@ -59,15 +51,35 @@ export default function SystemSettings() {
 
   return (
     <div className="settings-section">
-      <div className="settings-header">
-        <h3>Настройки системы</h3>
-        <button 
-          className="btn btn--primary"
-          onClick={handleSave}
-          disabled={loading}
-        >
-          {loading ? 'Сохранение...' : 'Сохранить'}
-        </button>
+      {/* Липкая панель действий */}
+      <div className="card" style={{
+        position: 'sticky',
+        top: 8,
+        zIndex: 5,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '10px 12px',
+        marginBottom: 12
+      }}>
+        <div style={{ fontWeight: 700 }}>Настройки системы</div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button 
+            type="button"
+            className="btn btn--secondary"
+            onClick={() => window.location.reload()}
+            disabled={loading}
+          >
+            Отменить
+          </button>
+          <button 
+            className="btn btn--primary"
+            onClick={handleSave}
+            disabled={loading}
+          >
+            {loading ? 'Сохранение...' : 'Сохранить'}
+          </button>
+        </div>
       </div>
 
       {saved && (
@@ -78,8 +90,14 @@ export default function SystemSettings() {
 
       <div className="settings-grid">
         {/* Настройки пропусков */}
-        <div className="settings-group">
-          <h4>Настройки пропусков</h4>
+        <div className="card">
+          <div className="cardHeader"><div className="cardTitle">Настройки пропусков</div></div>
+          <div className="cardBody">
+            <div className="form-row" style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: 16
+            }}>
           <div className="form-group">
             <label>Срок действия пропуска по умолчанию (дни)</label>
             <input
@@ -91,7 +109,6 @@ export default function SystemSettings() {
               max="3650"
             />
           </div>
-          
           <div className="form-group">
             <label>Максимальный срок действия пропуска (дни)</label>
             <input
@@ -103,7 +120,8 @@ export default function SystemSettings() {
               max="3650"
             />
           </div>
-          
+            </div>
+
           <div className="form-group">
             <label className="checkbox-label">
               <input
@@ -125,11 +143,13 @@ export default function SystemSettings() {
               Автоматически блокировать просроченные пропуска
             </label>
           </div>
+          </div>
         </div>
 
         {/* Настройки уведомлений */}
-        <div className="settings-group">
-          <h4>Уведомления</h4>
+        <div className="card">
+          <div className="cardHeader"><div className="cardTitle">Уведомления</div></div>
+          <div className="cardBody">
           <div className="form-group">
             <label className="checkbox-label">
               <input
@@ -140,7 +160,11 @@ export default function SystemSettings() {
               Email уведомления
             </label>
           </div>
-          
+          <div className="form-row" style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 16
+          }}>
           <div className="form-group">
             <label className="checkbox-label">
               <input
@@ -161,11 +185,19 @@ export default function SystemSettings() {
               className="form-input"
             />
           </div>
+          </div>
+          </div>
         </div>
 
         {/* Настройки безопасности */}
-        <div className="settings-group">
-          <h4>Безопасность</h4>
+        <div className="card">
+          <div className="cardHeader"><div className="cardTitle">Безопасность</div></div>
+          <div className="cardBody">
+            <div className="form-row" style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: 16
+            }}>
           <div className="form-group">
             <label>Максимум неудачных попыток входа</label>
             <input
@@ -189,6 +221,7 @@ export default function SystemSettings() {
               max="480"
             />
           </div>
+            </div>
           
           <div className="form-group">
             <label>Минимальная длина пароля</label>
@@ -212,99 +245,10 @@ export default function SystemSettings() {
               Требовать смену пароля при первом входе
             </label>
           </div>
-        </div>
-
-        {/* Настройки интеграций */}
-        <div className="settings-group">
-          <h4>Интеграции</h4>
-          <div className="form-group">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={settings.enableCheckpointIntegration}
-                onChange={(e) => handleChange('enableCheckpointIntegration', e.target.checked)}
-              />
-              Интеграция с КПП
-            </label>
-          </div>
-          
-          <div className="form-group">
-            <label>URL API КПП</label>
-            <input
-              type="url"
-              value={settings.checkpointApiUrl}
-              onChange={(e) => handleChange('checkpointApiUrl', e.target.value)}
-              className="form-input"
-              placeholder="http://localhost:8080/api/checkpoints"
-            />
-          </div>
-          
-          <div className="form-group">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={settings.enableLprIntegration}
-                onChange={(e) => handleChange('enableLprIntegration', e.target.checked)}
-              />
-              Интеграция с системой распознавания номеров (LPR)
-            </label>
-          </div>
-          
-          <div className="form-group">
-            <label>URL API LPR</label>
-            <input
-              type="url"
-              value={settings.lprApiUrl}
-              onChange={(e) => handleChange('lprApiUrl', e.target.value)}
-              className="form-input"
-              placeholder="http://localhost:8080/api/lpr"
-              disabled={!settings.enableLprIntegration}
-            />
           </div>
         </div>
 
-        {/* Настройки резервного копирования */}
-        <div className="settings-group">
-          <h4>Резервное копирование</h4>
-          <div className="form-group">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={settings.autoBackupEnabled}
-                onChange={(e) => handleChange('autoBackupEnabled', e.target.checked)}
-              />
-              Автоматическое резервное копирование
-            </label>
-          </div>
-          
-          <div className="form-group">
-            <label>Частота резервного копирования</label>
-            <select
-              value={settings.backupFrequency}
-              onChange={(e) => handleChange('backupFrequency', e.target.value)}
-              className="form-select"
-              disabled={!settings.autoBackupEnabled}
-            >
-              <option value="hourly">Каждый час</option>
-              <option value="daily">Ежедневно</option>
-              <option value="weekly">Еженедельно</option>
-              <option value="monthly">Ежемесячно</option>
-            </select>
-          </div>
-          
-          <div className="form-group">
-            <label>Срок хранения резервных копий (дни)</label>
-            <input
-              type="number"
-              value={settings.backupRetentionDays}
-              onChange={(e) => handleChange('backupRetentionDays', parseInt(e.target.value))}
-              className="form-input"
-              min="1"
-              max="365"
-              disabled={!settings.autoBackupEnabled}
-            />
-          </div>
-        </div>
+        {/* Интеграции и Резервное копирование показаны на отдельных вкладках */}
       </div>
     </div>
   );

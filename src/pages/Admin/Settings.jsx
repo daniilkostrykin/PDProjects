@@ -1,19 +1,21 @@
 import { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Context } from '@/context';
 import AccessDenied from '@/components/common/AccessDenied';
 import SystemSettings from '@/components/settings/SystemSettings';
-import UserManagement from '@/components/settings/UserManagement';
+// Пользователей переводим на отдельную страницу
+import { ADMIN_EMPLOYEES } from '@/utils/consts';
 
 export default function Settings() {
   const { user } = useContext(Context);
   const [activeTab, setActiveTab] = useState('system');
+  const navigate = useNavigate();
 
   // Временно отключаем проверку прав для тестирования
   // if (!user.isAdmin) return <AccessDenied />;
 
   const tabs = [
     { id: 'system', label: 'Настройки системы', component: SystemSettings },
-    { id: 'users', label: 'Пользователи', component: UserManagement },
     { id: 'integrations', label: 'Интеграции', component: IntegrationsSettings },
     { id: 'backup', label: 'Резервное копирование', component: BackupSettings }
   ];
