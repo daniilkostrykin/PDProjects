@@ -9,18 +9,18 @@ export default function AppLayout() {
   const navigate = useNavigate();
 
   const links = useMemo(() => (
-    (true) // user?.isAdmin — временно показываем админские
+    (user?.isAdmin) // показываем админские только для админов
       ? [
-          { to: ADMIN_QUEUE, label: 'Очередь' },
-          { to: ADMIN_APPROVED, label: 'Одобренные' },
-          { to: ADMIN_EMPLOYEES, label: 'Сотрудники' },
-          { to: ADMIN_REPORTS, label: 'Журналы' },
-          { to: ADMIN_SETTINGS, label: 'Настройки' },
+          { to: ADMIN_QUEUE, label: 'Очередь', icon: '📋' },
+          { to: ADMIN_APPROVED, label: 'Одобренные', icon: '✅' },
+          { to: ADMIN_EMPLOYEES, label: 'Сотрудники', icon: '👥' },
+          { to: ADMIN_REPORTS, label: 'Журналы', icon: '📊' },
+          { to: ADMIN_SETTINGS, label: 'Настройки', icon: '⚙️' },
         ]
       : [
-          { to: USER_REQUEST, label: 'Оформить пропуск' },
-          { to: USER_PASSES, label: 'Мои пропуска' },
-          { to: USER_PROFILE, label: 'Профиль' },
+          { to: USER_REQUEST, label: 'Оформить пропуск', icon: '🎫' },
+          { to: USER_PASSES, label: 'Мои пропуска', icon: '📄' },
+          { to: USER_PROFILE, label: 'Профиль', icon: '👤' },
         ]
   ), [user?.isAdmin]);
 
@@ -45,7 +45,8 @@ export default function AppLayout() {
                 to={l.to}
                 className={({ isActive }) => 'nav__link' + (isActive ? ' is-active' : '')}
               >
-                {l.label}
+                <span className="nav__icon">{l.icon}</span>
+                <span className="nav__text">{l.label}</span>
               </NavLink>
             ))}
           </nav>

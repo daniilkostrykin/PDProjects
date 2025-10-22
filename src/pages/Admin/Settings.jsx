@@ -101,6 +101,24 @@ function IntegrationsSettings() {
   ]);
 
   const [showAddForm, setShowAddForm] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+
+  const getSyncColor = (isoString) => {
+    try {
+      const last = new Date(isoString).getTime();
+      const now = Date.now();
+      const diffMs = now - last;
+      const hour = 60 * 60 * 1000;
+      const day = 24 * hour;
+      const week = 7 * day;
+      if (diffMs <= hour) return '#16a34a';          // зелёный
+      if (diffMs > week) return '#dc2626';           // красный
+      if (diffMs > day) return '#f59e0b';            // жёлтый
+      return 'inherit';
+    } catch (_) {
+      return 'inherit';
+    }
+  };
 
   const formatDateTime = (dateString) => {
     return new Date(dateString).toLocaleString('ru-RU');
@@ -139,41 +157,82 @@ function IntegrationsSettings() {
 
       <div className="integrations-grid" style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: 12
+        gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
+        gap: 16
       }}>
         {integrations.map(integration => (
           <div
             key={integration.id}
             className="card integration-card"
-            style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
+            style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 20 }}
           >
             <div className="integration-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h4>{integration.name}</h4>
               {getStatusBadge(integration.status)}
             </div>
             <div className="integration-details" style={{ display: 'grid', gap: 8 }}>
-              <div className="detail-item" style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 8 }}>
-                <label>Тип:</label>
-                <span>{getTypeLabel(integration.type)}</span>
+              <div className="detail-item" style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 12, alignItems: 'center' }}>
+                <label style={{ textAlign: 'right', whiteSpace: 'nowrap', color: 'var(--muted)' }}>Тип:</label>
+                <span style={{ textAlign: 'left' }}>{getTypeLabel(integration.type)}</span>
               </div>
-              <div className="detail-item" style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 8 }}>
-                <label>Endpoint:</label>
-                <span className="endpoint">{integration.endpoint}</span>
+              <div className="detail-item" style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 12, alignItems: 'center' }}>
+                <label style={{ textAlign: 'right', whiteSpace: 'nowrap', color: 'var(--muted)' }}>Endpoint:</label>
+                <span className="endpoint" style={{ textAlign: 'left' }}><code>{integration.endpoint}</code></span>
               </div>
-              <div className="detail-item" style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 8 }}>
-                <label>Последняя синхронизация:</label>
-                <span>{formatDateTime(integration.lastSync)}</span>
+              <div className="detail-item" style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 12, alignItems: 'center' }}>
+                <label style={{ textAlign: 'right', whiteSpace: 'nowrap', color: 'var(--muted)' }}>Последняя синхронизация:</label>
+                <span style={{ color: getSyncColor(integration.lastSync), fontWeight: 600, textAlign: 'left' }}>
+                  {formatDateTime(integration.lastSync)}
+                </span>
               </div>
             </div>
             <div className="integration-actions" style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-              <button className="btn btn--sm btn--primary" title="Проверить подключение">Тест</button>
-              <button className="btn btn--sm btn--secondary" title="Открыть настройки">Настройки</button>
-              <button className="btn btn--sm btn--danger" title="Удалить интеграцию">Удалить</button>
+              <button className="btn btn--sm btn--secondary" title="Проверить подключение">Тест</button>
+              <button className="btn btn--sm btn--secondary" title="Редактировать">✏️ Редактировать</button>
+              <button
+                className="btn btn--sm"
+                title="Удалить интеграцию"
+                onClick={() => setConfirmDelete(integration)}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid var(--danger)',
+                  color: 'var(--danger)'
+                }}
+              >
+                Удалить
+              </button>
             </div>
           </div>
         ))}
       </div>
+
+      {confirmDelete && (
+        <div className="modal-overlay" onClick={() => setConfirmDelete(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Удалить интеграцию</h3>
+              <button className="btn btn--ghost" onClick={() => setConfirmDelete(null)}>×</button>
+            </div>
+            <div className="cardBody" style={{ padding: 16 }}>
+              <p style={{ margin: 0 }}>
+                Вы уверены, что хотите удалить интеграцию "{confirmDelete.name}"? Это действие нельзя будет отменить.
+              </p>
+            </div>
+            <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '0 16px 16px' }}>
+              <button className="btn btn--secondary" onClick={() => setConfirmDelete(null)}>Отмена</button>
+              <button
+                className="btn btn--danger"
+                onClick={() => {
+                  setIntegrations(prev => prev.filter(i => i.id !== confirmDelete.id));
+                  setConfirmDelete(null);
+                }}
+              >
+                Удалить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showAddForm && (
         <IntegrationForm

@@ -16,14 +16,20 @@ const App = observer(() => {
   if (loading) return <div style={{ padding: 24 }}>Загрузка…</div>;
 
   // --- ВРЕМЕННОЕ ИЗМЕНЕНИЕ: Имитация авторизованного администратора ---
-  const MOCK_USER = { isAdmin: true, isAuth: true }; 
+  const MOCK_USER = { isAdmin: false, isAuth: true }; 
   const currentUser = MOCK_USER; // Используем моковый объект вместо реального user
   // -------------------------------------------------------------------
   
   return (
     <Routes>
       {/* публичные */}
-      {/* ... (оставляем без изменений) ... */}
+      {publicRoutes.map(({ path, element }) => (
+        <Route
+          key={`public-${path}`}
+          path={path}
+          element={<PublicOnlyRoute>{element}</PublicOnlyRoute>}
+        />
+      ))}
 
       {/* приватные (включая nested) */}
       {authRoutes.map(({ path, element, children, adminOnly }) => (

@@ -1,8 +1,20 @@
+import FormField from '../../../components/common/FormField';
+import { validators, createValidator } from '../../../utils/validation';
+
 export default function FullNameField({ value, onChange }) {
   return (
-    <label className="field">
-      <span>ФИО</span>
-      <input className="input" value={value} onChange={e=>onChange(e.target.value)} placeholder="Иванов Иван" />
-    </label>
-  )
+    <FormField
+      label="ФИО"
+      value={value}
+      onChange={onChange}
+      placeholder="Иванов Иван Иванович"
+      required
+      validators={[
+        validators.required,
+        validators.fullName,
+        validators.minLength(5),
+        validators.maxLength(100)
+      ]}
+    />
+  );
 }

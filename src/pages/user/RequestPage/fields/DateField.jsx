@@ -1,8 +1,15 @@
-export default function DateField({ value, onChange, label='Дата' }) {
+import FormField from '../../../components/common/FormField';
+import { validators } from '../../../utils/validation';
+
+export default function DateField({ value, onChange, label = 'Дата' }) {
   return (
-    <label className="field">
-      <span>{label}</span>
-      <input className="input" type="date" value={value} onChange={e=>onChange(e.target.value)} />
-    </label>
-  )
+    <FormField
+      label={label}
+      value={value}
+      onChange={onChange}
+      type="date"
+      required
+      validators={[validators.required, validators.date]}
+    />
+  );
 }

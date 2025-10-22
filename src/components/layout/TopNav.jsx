@@ -9,13 +9,16 @@ export default function TopNav({ onLogout }) {
 
         <nav className="nav">
           <NavLink to="/request" className={({isActive}) => "nav__link" + (isActive ? " is-active" : "")}>
-            Оформить пропуск
+            <span className="nav__icon">🎫</span>
+            <span className="nav__text">Оформить пропуск</span>
           </NavLink>
           <NavLink to="/my" className={({isActive}) => "nav__link" + (isActive ? " is-active" : "")}>
-            Мои пропуска
+            <span className="nav__icon">📄</span>
+            <span className="nav__text">Мои пропуска</span>
           </NavLink>
           <NavLink to="/profile" className={({isActive}) => "nav__link" + (isActive ? " is-active" : "")}>
-            Профиль
+            <span className="nav__icon">👤</span>
+            <span className="nav__text">Профиль</span>
           </NavLink>
         </nav>
 
