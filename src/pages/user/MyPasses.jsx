@@ -15,6 +15,7 @@ export default function MyPasses() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [data, setData] = useState(null);
+  const [activeMenu, setActiveMenu] = useState(null);
 
   const items = useMemo(() => {
     if (!data) return [];
@@ -148,9 +149,82 @@ export default function MyPasses() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, page, size]);
 
+  // Закрытие меню при клике вне его
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (activeMenu && !event.target.closest('[data-menu-container]')) {
+        closeMenu();
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [activeMenu]);
+
   const onChangeStatus = (e) => {
     setStatus(e.target.value);
     setPage(0);
+  };
+
+  // Функции быстрых действий
+  const handleEdit = (pass) => {
+    console.log("Редактировать пропуск:", pass);
+    // TODO: Реализовать редактирование
+    alert(`Редактирование пропуска #${pass.id} будет реализовано позже`);
+  };
+
+  const handleCancel = (pass) => {
+    if (confirm(`Вы уверены, что хотите отменить пропуск #${pass.id}?`)) {
+      console.log("Отменить пропуск:", pass);
+      // TODO: Реализовать отмену
+      alert(`Отмена пропуска #${pass.id} будет реализована позже`);
+    }
+  };
+
+  const handleRepeat = (pass) => {
+    console.log("Повторить пропуск:", pass);
+    // TODO: Реализовать повторение
+    alert(`Повторение пропуска #${pass.id} будет реализовано позже`);
+  };
+
+  const handleCopy = (pass) => {
+    const passData = {
+      ФИО: pass.fullName,
+      Дата: formatDate(pass.visitDate),
+      Основание: pass.reason,
+      Тип: pass.type === "CAR" ? "Автомобильный" : "Пеший",
+      ...(pass.type === "CAR" && {
+        Марка: pass.carBrand,
+        Модель: pass.carModel,
+        Госномер: pass.carPlate
+      })
+    };
+
+    const text = Object.entries(passData)
+      .filter(([_, value]) => value)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join('\n');
+
+    navigator.clipboard.writeText(text).then(() => {
+      alert("Данные пропуска скопированы в буфер обмена!");
+    }).catch(() => {
+      // Fallback для старых браузеров
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert("Данные пропуска скопированы в буфер обмена!");
+    });
+  };
+
+  const toggleMenu = (passId) => {
+    setActiveMenu(activeMenu === passId ? null : passId);
+  };
+
+  const closeMenu = () => {
+    setActiveMenu(null);
   };
 
   const formatDate = (v) => {
@@ -271,6 +345,147 @@ export default function MyPasses() {
                     {p.type === "CAR" ? "🚗" : "🚶"}
                     {p.type === "CAR" ? "Авто" : p.type === "PSH" ? "Пеший" : p.type}
                   </span>
+
+                  {/* Меню действий */}
+                  <div style={{ position: "relative" }} data-menu-container>
+                    <button
+                      onClick={() => toggleMenu(p.id)}
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 6,
+                        border: "1px solid #d1d5db",
+                        background: "#ffffff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        fontSize: 16,
+                        color: "#6b7280",
+                        transition: "all 0.2s ease"
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.background = "#f9fafb";
+                        e.target.style.borderColor = "#9ca3af";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.background = "#ffffff";
+                        e.target.style.borderColor = "#d1d5db";
+                      }}
+                    >
+                      ⋯
+                    </button>
+
+                    {/* Выпадающее меню */}
+                    {activeMenu === p.id && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "100%",
+                          right: 0,
+                          marginTop: 4,
+                          background: "#ffffff",
+                          border: "1px solid #d1d5db",
+                          borderRadius: 8,
+                          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                          zIndex: 10,
+                          minWidth: 160,
+                        }}
+                      >
+                        <button
+                          onClick={() => { handleEdit(p); closeMenu(); }}
+                          style={{
+                            width: "100%",
+                            padding: "8px 12px",
+                            border: "none",
+                            background: "transparent",
+                            textAlign: "left",
+                            fontSize: 14,
+                            color: "#374151",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            transition: "background 0.2s ease"
+                          }}
+                          onMouseEnter={(e) => e.target.style.background = "#f9fafb"}
+                          onMouseLeave={(e) => e.target.style.background = "transparent"}
+                        >
+                          ✏️ Редактировать
+                        </button>
+                        
+                        {p.status === "PENDING" && (
+                          <button
+                            onClick={() => { handleCancel(p); closeMenu(); }}
+                            style={{
+                              width: "100%",
+                              padding: "8px 12px",
+                              border: "none",
+                              background: "transparent",
+                              textAlign: "left",
+                              fontSize: 14,
+                              color: "#dc2626",
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              transition: "background 0.2s ease"
+                            }}
+                            onMouseEnter={(e) => e.target.style.background = "#fef2f2"}
+                            onMouseLeave={(e) => e.target.style.background = "transparent"}
+                          >
+                            ❌ Отменить
+                          </button>
+                        )}
+
+                        {(p.status === "APPROVED" || p.status === "REJECTED") && (
+                          <button
+                            onClick={() => { handleRepeat(p); closeMenu(); }}
+                            style={{
+                              width: "100%",
+                              padding: "8px 12px",
+                              border: "none",
+                              background: "transparent",
+                              textAlign: "left",
+                              fontSize: 14,
+                              color: "#3b82f6",
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              transition: "background 0.2s ease"
+                            }}
+                            onMouseEnter={(e) => e.target.style.background = "#f0f9ff"}
+                            onMouseLeave={(e) => e.target.style.background = "transparent"}
+                          >
+                            🔄 Повторить
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => { handleCopy(p); closeMenu(); }}
+                          style={{
+                            width: "100%",
+                            padding: "8px 12px",
+                            border: "none",
+                            background: "transparent",
+                            textAlign: "left",
+                            fontSize: 14,
+                            color: "#374151",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            transition: "background 0.2s ease"
+                          }}
+                          onMouseEnter={(e) => e.target.style.background = "#f9fafb"}
+                          onMouseLeave={(e) => e.target.style.background = "transparent"}
+                        >
+                          📋 Скопировать данные
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
