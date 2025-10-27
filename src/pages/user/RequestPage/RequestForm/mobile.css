@@ -1,0 +1,55 @@
+/* Мобильная версия формы оформления пропуска */
+@media (max-width: 768px) {
+  .card {
+    display: none !important;
+  }
+
+  .mobile-form-container {
+    display: block !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-form-container {
+    display: none !important;
+  }
+}
+
+/* Анимации для мобильной версии */
+.mobile-car-fields {
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-car-fields.hidden {
+  max-height: 0;
+  opacity: 0;
+  margin-bottom: 0;
+}
+
+.mobile-car-fields.visible {
+  max-height: 500px;
+  opacity: 1;
+  margin-bottom: 24px;
+}
+
+/* Улучшенные кнопки для мобильных */
+.mobile-button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.mobile-button:active {
+  transform: scale(0.98);
+}
+
+/* Плавные переходы для полей */
+.mobile-input {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mobile-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
