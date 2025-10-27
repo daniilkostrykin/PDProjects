@@ -1,0 +1,151 @@
+/* Мобильная панель навигации (Tab Bar) */
+.mobile-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 8px 0;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  z-index: 1000;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.mobile-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  min-width: 60px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 12px;
+  position: relative;
+}
+
+.mobile-tab:hover {
+  background: #f3f4f6;
+}
+
+.mobile-tab:active {
+  transform: scale(0.95);
+}
+
+.mobile-tab.active {
+  background: #eff6ff;
+}
+
+.mobile-tab-icon {
+  font-size: 24px;
+  margin-bottom: 4px;
+  transition: transform 0.2s ease;
+}
+
+.mobile-tab.active .mobile-tab-icon {
+  transform: scale(1.1);
+}
+
+.mobile-tab-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  transition: color 0.2s ease;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.mobile-tab.active .mobile-tab-label {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+/* Индикатор активной вкладки */
+.mobile-tab.active::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 3px;
+  background: #3b82f6;
+  border-radius: 2px;
+}
+
+/* Анимация для иконок */
+@keyframes tabPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.mobile-tab.active .mobile-tab-icon {
+  animation: tabPulse 0.3s ease;
+}
+
+/* Адаптация для разных размеров экранов */
+@media (max-width: 320px) {
+  .mobile-tab {
+    padding: 6px 8px;
+    min-width: 50px;
+  }
+
+  .mobile-tab-icon {
+    font-size: 20px;
+  }
+
+  .mobile-tab-label {
+    font-size: 10px;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-tab-bar {
+    display: none;
+  }
+}
+
+/* Поддержка темной темы */
+@media (prefers-color-scheme: dark) {
+  .mobile-tab-bar {
+    background: #1f2937;
+    border-top-color: #374151;
+  }
+
+  .mobile-tab:hover {
+    background: #374151;
+  }
+
+  .mobile-tab.active {
+    background: #1e3a8a;
+  }
+
+  .mobile-tab-label {
+    color: #9ca3af;
+  }
+
+  .mobile-tab.active .mobile-tab-label {
+    color: #60a5fa;
+  }
+}
+
+/* Безопасная зона для iPhone */
+@supports (padding: max(0px)) {
+  .mobile-tab-bar {
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+}

@@ -3,6 +3,8 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useContext, useMemo } from 'react';
 import { Context } from '@/context';
 import { LOGIN_ROUTE, DASHBOARD_ROUTE, ADMIN_QUEUE, ADMIN_APPROVED, ADMIN_EMPLOYEES, ADMIN_REPORTS, ADMIN_SETTINGS, USER_REQUEST, USER_PASSES, USER_PROFILE } from '@/utils/consts';
+import MobileTabBar from '../MobileTabBar';
+import './AppLayout.css';
 
 export default function AppLayout() {
   const { user } = useContext(Context);
@@ -34,7 +36,8 @@ export default function AppLayout() {
 
   return (
     <>
-      <header className="topbar">
+      {/* Десктопная версия */}
+      <header className="topbar desktop-header">
         <div className="topbar__inner container">
           <NavLink to={DASHBOARD_ROUTE} className="navBrand">AutoPass</NavLink>
 
@@ -73,9 +76,21 @@ export default function AppLayout() {
         </div>
       </header>
 
-      <main className="container" style={{ paddingTop: 16 }}>
+      {/* Мобильная версия - только логотип */}
+      <header className="mobile-header">
+        <div className="mobile-header__inner">
+          <NavLink to={DASHBOARD_ROUTE} className="mobile-brand">
+            AutoPass
+          </NavLink>
+        </div>
+      </header>
+
+      <main className="container main-content">
         <Outlet />
       </main>
+
+      {/* Мобильная панель навигации */}
+      {!user?.isAdmin && <MobileTabBar />}
     </>
   );
 }

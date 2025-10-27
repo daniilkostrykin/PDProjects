@@ -1,9 +1,11 @@
 import { useContext, useState } from 'react';
 import { Context } from '@/context';
 import { validators } from '@/utils/validation';
+import { useNavigate } from 'react-router-dom';
 
 export default function Profile() {
   const { user } = useContext(Context);
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -78,6 +80,19 @@ export default function Profile() {
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: null }));
     }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await user?.logout?.();
+    } finally {
+      navigate('/login', { replace: true });
+    }
+  };
+
+  const handleHelp = () => {
+    // TODO: Реализовать страницу помощи
+    alert('Раздел помощи в разработке');
   };
 
   return (
@@ -381,6 +396,86 @@ export default function Profile() {
                 )) || '—'}
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Дополнительные действия */}
+        <div style={{ 
+          borderTop: '1px solid #e5e7eb', 
+          paddingTop: 24 
+        }}>
+          <h3 style={{ 
+            fontSize: 18, 
+            fontWeight: 600, 
+            color: '#111827', 
+            marginBottom: 16,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8
+          }}>
+            🔧 Дополнительные действия
+          </h3>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <button
+              onClick={handleHelp}
+              style={{
+                width: '100%',
+                padding: '16px 20px',
+                background: '#f3f4f6',
+                color: '#374151',
+                border: '1px solid #d1d5db',
+                borderRadius: 12,
+                fontSize: 16,
+                fontWeight: 500,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#e5e7eb';
+                e.target.style.borderColor = '#9ca3af';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = '#f3f4f6';
+                e.target.style.borderColor = '#d1d5db';
+              }}
+            >
+              <span style={{ fontSize: 20 }}>❓</span>
+              <span>Помощь и поддержка</span>
+            </button>
+            
+            <button
+              onClick={handleLogout}
+              style={{
+                width: '100%',
+                padding: '16px 20px',
+                background: '#fef2f2',
+                color: '#dc2626',
+                border: '1px solid #fecaca',
+                borderRadius: 12,
+                fontSize: 16,
+                fontWeight: 500,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#fee2e2';
+                e.target.style.borderColor = '#fca5a5';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = '#fef2f2';
+                e.target.style.borderColor = '#fecaca';
+              }}
+            >
+              <span style={{ fontSize: 20 }}>🚪</span>
+              <span>Выйти из системы</span>
+            </button>
           </div>
         </div>
       </div>

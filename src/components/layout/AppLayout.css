@@ -1,0 +1,98 @@
+/* Адаптивный дизайн для AppLayout */
+
+/* Десктопная версия - показываем только на больших экранах */
+@media (min-width: 769px) {
+  .desktop-header {
+    display: block;
+  }
+
+  .mobile-header {
+    display: none;
+  }
+
+  .main-content {
+    padding-top: 16px;
+  }
+}
+
+/* Мобильная версия - показываем только на маленьких экранах */
+@media (max-width: 768px) {
+  .desktop-header {
+    display: none;
+  }
+
+  .mobile-header {
+    display: block;
+  }
+
+  .main-content {
+    padding-top: 0;
+    padding-bottom: 80px; /* Отступ для Tab Bar */
+  }
+}
+
+/* Стили для мобильной шапки */
+.mobile-header {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 20px;
+  min-height: 60px;
+}
+
+.mobile-brand {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-brand:hover {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.mobile-brand::before {
+  content: "🎫";
+  font-size: 28px;
+}
+
+/* Анимации для мобильной шапки */
+.mobile-header {
+  transition: all 0.3s ease;
+}
+
+/* Поддержка темной темы для мобильной шапки */
+@media (prefers-color-scheme: dark) {
+  .mobile-header {
+    background: #1f2937;
+    border-bottom-color: #374151;
+  }
+
+  .mobile-brand {
+    color: #f9fafb;
+  }
+
+  .mobile-brand:hover {
+    color: #60a5fa;
+  }
+}
+
+/* Безопасная зона для iPhone */
+@supports (padding: max(0px)) {
+  .mobile-header__inner {
+    padding-top: max(16px, env(safe-area-inset-top));
+  }
+}
