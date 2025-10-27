@@ -6,6 +6,7 @@ import ReasonField from '../fields/ReasonField';
 import CarBrandField from '../fields/CarBrandField';
 import CarModelField from '../fields/CarModelField';
 import CarPlateField from '../fields/CarPlateField';
+import ValidityPeriodField from '../fields/ValidityPeriodField';
 import { validatePassRequest } from '../../../../utils/validation';
 
 export default function RequestForm({ value, onChange, onSubmit, submitting }) {
@@ -59,7 +60,7 @@ export default function RequestForm({ value, onChange, onSubmit, submitting }) {
   };
 
   const hasErrors = Object.values(formErrors).some(error => error);
-  const isFormValid = !hasErrors && v.passType && v.fullName && v.date && v.reason && 
+  const isFormValid = !hasErrors && v.passType && v.fullName && v.date && v.reason && v.validityPeriod &&
     (v.passType !== 'car' || (v.carBrand && v.carModel && v.carPlate));
 
   return (
@@ -80,6 +81,8 @@ export default function RequestForm({ value, onChange, onSubmit, submitting }) {
           <DateField value={v.date} onChange={set('date')} resetTrigger={resetTrigger} />
 
           <FullNameField value={v.fullName} onChange={set('fullName')} resetTrigger={resetTrigger} />
+          <ValidityPeriodField value={v.validityPeriod} onChange={set('validityPeriod')} resetTrigger={resetTrigger} />
+
           <ReasonField value={v.reason} onChange={set('reason')} resetTrigger={resetTrigger} />
 
           {v.passType === 'car' && (
@@ -109,6 +112,7 @@ export default function RequestForm({ value, onChange, onSubmit, submitting }) {
                 date: '',
                 fullName: '',
                 reason: '',
+                validityPeriod: '',
                 carBrand: '',
                 carModel: '',
                 carPlate: ''

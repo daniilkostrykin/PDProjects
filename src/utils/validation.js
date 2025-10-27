@@ -94,6 +94,24 @@ export const validators = {
     }
     return null;
   },
+
+  position: (value) => {
+    if (value && value.length < 2) {
+      return "Должность должна содержать минимум 2 символа";
+    }
+    return null;
+  },
+
+  phone: (value) => {
+    if (value) {
+      // Российский формат телефона
+      const phoneRegex = /^[\+]?[7-8]?[\s\-\(\)]?[0-9\s\-\(\)]{10,}$/;
+      if (!phoneRegex.test(value.replace(/\s/g, ""))) {
+        return "Некорректный формат телефона (например: +7 999 123-45-67)";
+      }
+    }
+    return null;
+  },
 };
 
 // Комбинированные валидаторы
@@ -131,6 +149,10 @@ export const validatePassRequest = (formData) => {
     errors.reason = "Укажите основание для пропуска";
   } else if (formData.reason.length < 5) {
     errors.reason = "Основание должно содержать минимум 5 символов";
+  }
+
+  if (!formData.validityPeriod?.trim()) {
+    errors.validityPeriod = "Выберите срок действия пропуска";
   }
 
   // Валидация для автомобильного пропуска

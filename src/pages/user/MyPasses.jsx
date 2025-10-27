@@ -187,6 +187,7 @@ export default function MyPasses() {
             visitDate: "2024-01-15",
             fullName: "Иванов Иван Иванович",
             reason: "Деловая встреча с руководством",
+            validityPeriod: "8h",
             carBrand: "Toyota",
             carModel: "Camry",
             carPlate: "А123БВ777",
@@ -202,6 +203,7 @@ export default function MyPasses() {
             visitDate: "2024-01-12",
             fullName: "Сидоров Сидор Сидорович",
             reason: "Техническое обслуживание оборудования",
+            validityPeriod: "1d",
             carBrand: null,
             carModel: null,
             carPlate: null,
@@ -217,6 +219,7 @@ export default function MyPasses() {
             visitDate: "2024-01-08",
             fullName: "Кузнецов Кузьма Кузьмич",
             reason: "Поставка материалов",
+            validityPeriod: "4h",
             carBrand: "Volkswagen",
             carModel: "Transporter",
             carPlate: "В456ГД123",
@@ -232,6 +235,7 @@ export default function MyPasses() {
             visitDate: "2024-01-20",
             fullName: "Морозов Мороз Морозович",
             reason: "Консультация по проекту",
+            validityPeriod: "1w",
             carBrand: "BMW",
             carModel: "X5",
             carPlate: "С789ЕЖ456",
@@ -348,6 +352,7 @@ export default function MyPasses() {
     const passData = {
       ФИО: pass.fullName,
       Дата: formatDate(pass.visitDate),
+      "Срок действия": formatValidityPeriod(pass.validityPeriod),
       Основание: pass.reason,
       Тип: pass.type === "CAR" ? "Автомобильный" : "Пеший",
       ...(pass.type === "CAR" && {
@@ -393,6 +398,21 @@ export default function MyPasses() {
     } catch (_) {
       return String(v);
     }
+  };
+
+  const formatValidityPeriod = (period) => {
+    if (!period) return "—";
+    const periodMap = {
+      "1h": "1 час",
+      "2h": "2 часа", 
+      "4h": "4 часа",
+      "8h": "8 часов",
+      "1d": "1 день",
+      "3d": "3 дня",
+      "1w": "1 неделя",
+      "1m": "1 месяц"
+    };
+    return periodMap[period] || period;
   };
 
   return (
@@ -883,6 +903,17 @@ export default function MyPasses() {
                   marginBottom: 8
                 }}>
                   📅 {formatDate(p.visitDate)}
+                </div>
+                <div style={{ 
+                  fontSize: 14, 
+                  fontWeight: 500,
+                  color: "#059669",
+                  marginBottom: 8,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6
+                }}>
+                  ⏱️ Срок действия: {formatValidityPeriod(p.validityPeriod)}
                 </div>
                 <div style={{ 
                   fontSize: 14, 
