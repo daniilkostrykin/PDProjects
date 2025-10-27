@@ -1,7 +1,7 @@
-import FormField from '../../../components/common/FormField';
-import { validators } from '../../../utils/validation';
+import FormField from '../../../../components/common/FormField';
+import { validators } from '../../../../utils/validation';
 
-export default function CarModelField({ value, onChange }) {
+export default function CarModelField({ value, onChange, resetTrigger }) {
   return (
     <FormField
       label="Модель автомобиля"
@@ -14,6 +14,7 @@ export default function CarModelField({ value, onChange }) {
         validators.minLength(2),
         validators.maxLength(50)
       ]}
+      resetTrigger={resetTrigger}
     />
   );
 }

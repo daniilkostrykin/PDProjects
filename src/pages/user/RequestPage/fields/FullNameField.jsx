@@ -1,7 +1,7 @@
-import FormField from '../../../components/common/FormField';
-import { validators, createValidator } from '../../../utils/validation';
+import FormField from '../../../../components/common/FormField';
+import { validators, createValidator } from '../../../../utils/validation';
 
-export default function FullNameField({ value, onChange }) {
+export default function FullNameField({ value, onChange, resetTrigger }) {
   return (
     <FormField
       label="ФИО"
@@ -15,6 +15,7 @@ export default function FullNameField({ value, onChange }) {
         validators.minLength(5),
         validators.maxLength(100)
       ]}
+      resetTrigger={resetTrigger}
     />
   );
 }

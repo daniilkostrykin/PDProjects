@@ -57,11 +57,23 @@ export const validators = {
 
   carPlate: (value) => {
     if (value) {
-      // Российский формат: A000AA77 или A000AA777
-      const plateRegex = /^[АВЕКМНОРСТУХ]\d{3}[АВЕКМНОРСТУХ]{2}\d{2,3}$/i;
-      if (!plateRegex.test(value.replace(/\s/g, ""))) {
-        return "Некорректный формат госномера (например: A000AA77)";
+      // Российский формат: A000AA77, A000AA777, AA00077, AA000777
+      const cleanValue = value.replace(/\s/g, "");
+      const plateRegex = /^[АВЕКМНОРСТУХ]{1,2}\d{3}[АВЕКМНОРСТУХ]{2}\d{2,3}$/i;
+
+      console.log("🔍 Валидация госномера:");
+      console.log("  Исходное значение:", JSON.stringify(value));
+      console.log("  Очищенное значение:", JSON.stringify(cleanValue));
+      console.log("  Длина:", cleanValue.length);
+      console.log("  Регулярное выражение:", plateRegex);
+      console.log("  Результат теста:", plateRegex.test(cleanValue));
+
+      if (!plateRegex.test(cleanValue)) {
+        console.log("❌ Валидация не прошла");
+        return "Некорректный формат госномера (например: A000AA77, AA00077)";
       }
+
+      console.log("✅ Валидация прошла успешно");
     }
     return null;
   },
@@ -97,6 +109,7 @@ export const createValidator =
 
 // Валидация формы пропуска
 export const validatePassRequest = (formData) => {
+  console.log("📋 validatePassRequest вызвана с данными:", formData);
   const errors = {};
 
   // Обязательные поля
@@ -122,6 +135,8 @@ export const validatePassRequest = (formData) => {
 
   // Валидация для автомобильного пропуска
   if (formData.passType === "car") {
+    console.log("🚗 Валидация автомобильного пропуска");
+
     if (!formData.carBrand?.trim()) {
       errors.carBrand = "Укажите марку автомобиля";
     }
@@ -133,11 +148,24 @@ export const validatePassRequest = (formData) => {
     if (!formData.carPlate?.trim()) {
       errors.carPlate = "Укажите госномер";
     } else {
+      console.log(
+        "🔍 Валидация госномера в validatePassRequest:",
+        formData.carPlate
+      );
       const plateError = validators.carPlate(formData.carPlate);
-      if (plateError) errors.carPlate = plateError;
+      if (plateError) {
+        errors.carPlate = plateError;
+        console.log("❌ Ошибка госномера:", plateError);
+      } else {
+        console.log("✅ Госномер валиден");
+      }
     }
   }
 
+  console.log("📋 Результат валидации:", {
+    isValid: Object.keys(errors).length === 0,
+    errors,
+  });
   return {
     isValid: Object.keys(errors).length === 0,
     errors,

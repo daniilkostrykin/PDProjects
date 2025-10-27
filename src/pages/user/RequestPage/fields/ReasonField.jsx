@@ -1,7 +1,7 @@
-import FormField from '../../../components/common/FormField';
-import { validators } from '../../../utils/validation';
+import FormField from '../../../../components/common/FormField';
+import { validators } from '../../../../utils/validation';
 
-export default function ReasonField({ value, onChange }) {
+export default function ReasonField({ value, onChange, resetTrigger }) {
   return (
     <FormField
       label="Основание для пропуска"
@@ -15,6 +15,7 @@ export default function ReasonField({ value, onChange }) {
         validators.minLength(10),
         validators.maxLength(500)
       ]}
+      resetTrigger={resetTrigger}
     />
   );
 }

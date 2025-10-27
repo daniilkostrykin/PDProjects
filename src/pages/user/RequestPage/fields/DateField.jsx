@@ -1,7 +1,7 @@
-import FormField from '../../../components/common/FormField';
-import { validators } from '../../../utils/validation';
+import FormField from '../../../../components/common/FormField';
+import { validators } from '../../../../utils/validation';
 
-export default function DateField({ value, onChange, label = 'Дата' }) {
+export default function DateField({ value, onChange, label = 'Дата', resetTrigger }) {
   return (
     <FormField
       label={label}
@@ -10,6 +10,7 @@ export default function DateField({ value, onChange, label = 'Дата' }) {
       type="date"
       required
       validators={[validators.required, validators.date]}
+      resetTrigger={resetTrigger}
     />
   );
 }

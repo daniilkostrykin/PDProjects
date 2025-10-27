@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PassTypeSelect from '../fields/PassTypeSelect';
 import DateField from '../fields/DateField';
 import FullNameField from '../fields/FullNameField';
@@ -6,11 +6,23 @@ import ReasonField from '../fields/ReasonField';
 import CarBrandField from '../fields/CarBrandField';
 import CarModelField from '../fields/CarModelField';
 import CarPlateField from '../fields/CarPlateField';
-import { validatePassRequest } from '../../../utils/validation';
+import { validatePassRequest } from '../../../../utils/validation';
 
 export default function RequestForm({ value, onChange, onSubmit, submitting }) {
   const [formErrors, setFormErrors] = useState({});
   const [showErrors, setShowErrors] = useState(false);
+  const [resetTrigger, setResetTrigger] = useState(0);
+
+  // Сбрасываем ошибки при сбросе формы
+  useEffect(() => {
+    const isFormEmpty = !value.passType && !value.fullName && !value.date && !value.reason && 
+                       !value.carBrand && !value.carModel && !value.carPlate;
+    
+    if (isFormEmpty) {
+      setFormErrors({});
+      setShowErrors(false);
+    }
+  }, [value]);
 
   const v = value;
   const set = (k) => (val) => {
@@ -21,7 +33,7 @@ export default function RequestForm({ value, onChange, onSubmit, submitting }) {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Валидируем всю форму
@@ -34,9 +46,16 @@ export default function RequestForm({ value, onChange, onSubmit, submitting }) {
     }
 
     // Если валидация прошла успешно, отправляем форму
-    onSubmit?.();
-    setFormErrors({});
-    setShowErrors(false);
+    try {
+      await onSubmit?.();
+      // Сбрасываем ошибки и состояние полей только после успешной отправки
+      setFormErrors({});
+      setShowErrors(false);
+      setResetTrigger(prev => prev + 1);
+    } catch (error) {
+      // В случае ошибки отправки не сбрасываем состояние
+      console.error('Ошибка отправки формы:', error);
+    }
   };
 
   const hasErrors = Object.values(formErrors).some(error => error);
@@ -57,17 +76,17 @@ export default function RequestForm({ value, onChange, onSubmit, submitting }) {
 
       <div className="cardBody">
         <div className="grid2">
-          <PassTypeSelect value={v.passType} onChange={set('passType')} />
-          <DateField value={v.date} onChange={set('date')} />
+          <PassTypeSelect value={v.passType} onChange={set('passType')} resetTrigger={resetTrigger} />
+          <DateField value={v.date} onChange={set('date')} resetTrigger={resetTrigger} />
 
-          <FullNameField value={v.fullName} onChange={set('fullName')} />
-          <ReasonField value={v.reason} onChange={set('reason')} />
+          <FullNameField value={v.fullName} onChange={set('fullName')} resetTrigger={resetTrigger} />
+          <ReasonField value={v.reason} onChange={set('reason')} resetTrigger={resetTrigger} />
 
           {v.passType === 'car' && (
             <>
-              <CarBrandField value={v.carBrand} onChange={set('carBrand')} />
-              <CarModelField value={v.carModel} onChange={set('carModel')} />
-              <CarPlateField value={v.carPlate} onChange={set('carPlate')} />
+              <CarBrandField value={v.carBrand} onChange={set('carBrand')} resetTrigger={resetTrigger} />
+              <CarModelField value={v.carModel} onChange={set('carModel')} resetTrigger={resetTrigger} />
+              <CarPlateField value={v.carPlate} onChange={set('carPlate')} resetTrigger={resetTrigger} />
             </>
           )}
         </div>
@@ -96,6 +115,7 @@ export default function RequestForm({ value, onChange, onSubmit, submitting }) {
               });
               setFormErrors({});
               setShowErrors(false);
+              setResetTrigger(prev => prev + 1);
             }}
           >
             🔄 Сбросить

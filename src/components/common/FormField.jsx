@@ -4,8 +4,15 @@ import { useState, useEffect } from 'react';
 const validateField = (value, validators) => {
   if (!validators || validators.length === 0) return null;
   
+  console.log("🔧 FormField validateField:", {
+    value: JSON.stringify(value),
+    validatorsCount: validators.length,
+    validators: validators.map(v => v.name || 'anonymous')
+  });
+  
   for (const validator of validators) {
     const error = validator(value);
+    console.log("  Валидатор:", validator.name || 'anonymous', "Результат:", error);
     if (error) return error;
   }
   return null;
@@ -20,6 +27,7 @@ export default function FormField({
   validators = [],
   required = false,
   className = '',
+  resetTrigger = 0,
   ...props 
 }) {
   const [error, setError] = useState(null);
@@ -33,6 +41,15 @@ export default function FormField({
       setError(validationError);
     }
   }, [value, touched, validators]);
+
+  // Сброс состояния при изменении resetTrigger
+  useEffect(() => {
+    if (resetTrigger > 0) {
+      setError(null);
+      setTouched(false);
+      setIsFocused(false);
+    }
+  }, [resetTrigger]);
 
   const handleBlur = () => {
     setTouched(true);

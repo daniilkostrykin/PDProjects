@@ -5,7 +5,7 @@ import HistoryTable from './HistoryTable'
 
 export default function RequestPage() {
   const [form, setForm] = useState({
-    passType:'car', date:'', fullName:'', reason:'',
+    passType:'', date:'', fullName:'', reason:'',
     carBrand:'', carModel:'', carPlate:''
   })
   const [submitting, setSubmitting] = useState(false)
@@ -18,7 +18,8 @@ export default function RequestPage() {
       // TODO: здесь будет вызов твоего бэка, когда появится эндпоинт
       const row = { ...form, status:'pending' }
       setHistory([row, ...history])
-      setForm({ passType:'car', date:'', fullName:'', reason:'', carBrand:'', carModel:'', carPlate:'' })
+      // Сбрасываем форму на пустые значения
+      setForm({ passType:'', date:'', fullName:'', reason:'', carBrand:'', carModel:'', carPlate:'' })
     } finally { setSubmitting(false) }
   }
 

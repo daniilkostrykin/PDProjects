@@ -1,7 +1,7 @@
-import FormField from '../../../components/common/FormField';
-import { validators } from '../../../utils/validation';
+import FormField from '../../../../components/common/FormField';
+import { validators } from '../../../../utils/validation';
 
-export default function CarPlateField({ value, onChange }) {
+export default function CarPlateField({ value, onChange, resetTrigger }) {
   return (
     <FormField
       label="Государственный номер"
@@ -13,6 +13,7 @@ export default function CarPlateField({ value, onChange }) {
         validators.required,
         validators.carPlate
       ]}
+      resetTrigger={resetTrigger}
     />
   );
 }
