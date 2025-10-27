@@ -8,8 +8,36 @@ const STATUS_OPTIONS = [
   { label: "Отклонены", value: "REJECTED" },
 ];
 
+const DATE_FILTER_OPTIONS = [
+  { label: "Все даты", value: "" },
+  { label: "Сегодня", value: "today" },
+  { label: "Завтра", value: "tomorrow" },
+  { label: "На этой неделе", value: "thisWeek" },
+  { label: "На следующей неделе", value: "nextWeek" },
+  { label: "В этом месяце", value: "thisMonth" },
+  { label: "Прошлый месяц", value: "lastMonth" },
+  { label: "Произвольный диапазон", value: "custom" },
+];
+
+const SORT_OPTIONS = [
+  { label: "Дата визита", value: "visitDate" },
+  { label: "Дата создания", value: "createdAt" },
+  { label: "Статус", value: "status" },
+  { label: "ФИО", value: "fullName" },
+];
+
+const SORT_ORDER_OPTIONS = [
+  { label: "По убыванию", value: "desc" },
+  { label: "По возрастанию", value: "asc" },
+];
+
 export default function MyPasses() {
   const [status, setStatus] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
+  const [customDateFrom, setCustomDateFrom] = useState("");
+  const [customDateTo, setCustomDateTo] = useState("");
+  const [sortBy, setSortBy] = useState("visitDate");
+  const [sortOrder, setSortOrder] = useState("desc");
   const [page, setPage] = useState(0);
   const [size] = useState(10);
   const [loading, setLoading] = useState(false);
@@ -17,13 +45,117 @@ export default function MyPasses() {
   const [data, setData] = useState(null);
   const [activeMenu, setActiveMenu] = useState(null);
 
+  // Функции для работы с датами
+  const getDateRange = (filter) => {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+    
+    const nextWeekStart = new Date(endOfWeek);
+    nextWeekStart.setDate(endOfWeek.getDate() + 1);
+    nextWeekStart.setHours(0, 0, 0, 0);
+    
+    const nextWeekEnd = new Date(nextWeekStart);
+    nextWeekEnd.setDate(nextWeekStart.getDate() + 6);
+    nextWeekEnd.setHours(23, 59, 59, 999);
+    
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    endOfMonth.setHours(23, 59, 59, 999);
+    
+    const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+    lastMonthEnd.setHours(23, 59, 59, 999);
+
+    switch (filter) {
+      case "today":
+        return {
+          from: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+          to: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999)
+        };
+      case "tomorrow":
+        return {
+          from: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate()),
+          to: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 23, 59, 59, 999)
+        };
+      case "thisWeek":
+        return { from: startOfWeek, to: endOfWeek };
+      case "nextWeek":
+        return { from: nextWeekStart, to: nextWeekEnd };
+      case "thisMonth":
+        return { from: startOfMonth, to: endOfMonth };
+      case "lastMonth":
+        return { from: lastMonthStart, to: lastMonthEnd };
+      case "custom":
+        return {
+          from: customDateFrom ? new Date(customDateFrom) : null,
+          to: customDateTo ? new Date(customDateTo) : null
+        };
+      default:
+        return null;
+    }
+  };
+
+  const isDateInRange = (date, range) => {
+    if (!range || !date) return true;
+    const checkDate = new Date(date);
+    if (range.from && checkDate < range.from) return false;
+    if (range.to && checkDate > range.to) return false;
+    return true;
+  };
+
   const items = useMemo(() => {
     if (!data) return [];
-    if (Array.isArray(data)) return data;
-    if (Array.isArray(data.content)) return data.content;
-    if (Array.isArray(data.items)) return data.items;
-    return [];
-  }, [data]);
+    let items = Array.isArray(data) ? data : Array.isArray(data.content) ? data.content : Array.isArray(data.items) ? data.items : [];
+    
+    // Фильтрация по дате
+    if (dateFilter) {
+      const dateRange = getDateRange(dateFilter);
+      if (dateRange) {
+        items = items.filter(item => isDateInRange(item.visitDate, dateRange));
+      }
+    }
+    
+    // Сортировка
+    items.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortBy) {
+        case "visitDate":
+          aValue = new Date(a.visitDate);
+          bValue = new Date(b.visitDate);
+          break;
+        case "createdAt":
+          aValue = new Date(a.createdAt);
+          bValue = new Date(b.createdAt);
+          break;
+        case "status":
+          aValue = a.status;
+          bValue = b.status;
+          break;
+        case "fullName":
+          aValue = a.fullName?.toLowerCase() || "";
+          bValue = b.fullName?.toLowerCase() || "";
+          break;
+        default:
+          return 0;
+      }
+      
+      if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+    
+    return items;
+  }, [data, dateFilter, customDateFrom, customDateTo, sortBy, sortOrder]);
 
   const totalPages = useMemo(() => {
     if (!data) return 0;
@@ -166,6 +298,31 @@ export default function MyPasses() {
     setPage(0);
   };
 
+  const onChangeDateFilter = (e) => {
+    setDateFilter(e.target.value);
+    setPage(0);
+  };
+
+  const onChangeCustomDateFrom = (e) => {
+    setCustomDateFrom(e.target.value);
+    setPage(0);
+  };
+
+  const onChangeCustomDateTo = (e) => {
+    setCustomDateTo(e.target.value);
+    setPage(0);
+  };
+
+  const onChangeSortBy = (e) => {
+    setSortBy(e.target.value);
+    setPage(0);
+  };
+
+  const onChangeSortOrder = (e) => {
+    setSortOrder(e.target.value);
+    setPage(0);
+  };
+
   // Функции быстрых действий
   const handleEdit = (pass) => {
     console.log("Редактировать пропуск:", pass);
@@ -242,13 +399,232 @@ export default function MyPasses() {
     <div>
       <h2>Мои пропуска</h2>
 
-      <div style={{ display: "flex", gap: 12, alignItems: "center", margin: "12px 0 16px" }}>
-        <label style={{ fontWeight: 500 }}>Статус:</label>
-        <select value={status} onChange={onChangeStatus}>
-          {STATUS_OPTIONS.map((o) => (
-            <option key={o.value || "ALL"} value={o.value}>{o.label}</option>
-          ))}
-        </select>
+      {/* Фильтры и сортировка */}
+      <div style={{ 
+        background: "#f8fafc", 
+        padding: 16, 
+        borderRadius: 8, 
+        marginBottom: 20,
+        border: "1px solid #e2e8f0"
+      }}>
+        <div style={{ 
+          display: "grid", 
+          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", 
+          gap: 16,
+          marginBottom: 16
+        }}>
+          {/* Фильтр по статусу */}
+          <div>
+            <label style={{ 
+              display: "block", 
+              fontWeight: 600, 
+              color: "#374151", 
+              marginBottom: 4,
+              fontSize: 14
+            }}>
+              Статус
+            </label>
+            <select 
+              value={status} 
+              onChange={onChangeStatus}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                border: "1px solid #d1d5db",
+                borderRadius: 6,
+                fontSize: 14,
+                background: "#ffffff"
+              }}
+            >
+              {STATUS_OPTIONS.map((o) => (
+                <option key={o.value || "ALL"} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Фильтр по дате */}
+          <div>
+            <label style={{ 
+              display: "block", 
+              fontWeight: 600, 
+              color: "#374151", 
+              marginBottom: 4,
+              fontSize: 14
+            }}>
+              Дата визита
+            </label>
+            <select 
+              value={dateFilter} 
+              onChange={onChangeDateFilter}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                border: "1px solid #d1d5db",
+                borderRadius: 6,
+                fontSize: 14,
+                background: "#ffffff"
+              }}
+            >
+              {DATE_FILTER_OPTIONS.map((o) => (
+                <option key={o.value || "ALL"} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Сортировка */}
+          <div>
+            <label style={{ 
+              display: "block", 
+              fontWeight: 600, 
+              color: "#374151", 
+              marginBottom: 4,
+              fontSize: 14
+            }}>
+              Сортировать по
+            </label>
+            <select 
+              value={sortBy} 
+              onChange={onChangeSortBy}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                border: "1px solid #d1d5db",
+                borderRadius: 6,
+                fontSize: 14,
+                background: "#ffffff"
+              }}
+            >
+              {SORT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Порядок сортировки */}
+          <div>
+            <label style={{ 
+              display: "block", 
+              fontWeight: 600, 
+              color: "#374151", 
+              marginBottom: 4,
+              fontSize: 14
+            }}>
+              Порядок
+            </label>
+            <select 
+              value={sortOrder} 
+              onChange={onChangeSortOrder}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                border: "1px solid #d1d5db",
+                borderRadius: 6,
+                fontSize: 14,
+                background: "#ffffff"
+              }}
+            >
+              {SORT_ORDER_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Произвольный диапазон дат */}
+        {dateFilter === "custom" && (
+          <div style={{ 
+            display: "grid", 
+            gridTemplateColumns: "1fr 1fr", 
+            gap: 12,
+            padding: 12,
+            background: "#ffffff",
+            borderRadius: 6,
+            border: "1px solid #d1d5db"
+          }}>
+            <div>
+              <label style={{ 
+                display: "block", 
+                fontWeight: 500, 
+                color: "#374151", 
+                marginBottom: 4,
+                fontSize: 13
+              }}>
+                От даты
+              </label>
+              <input
+                type="date"
+                value={customDateFrom}
+                onChange={onChangeCustomDateFrom}
+                style={{
+                  width: "100%",
+                  padding: "6px 8px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: 4,
+                  fontSize: 13
+                }}
+              />
+            </div>
+            <div>
+              <label style={{ 
+                display: "block", 
+                fontWeight: 500, 
+                color: "#374151", 
+                marginBottom: 4,
+                fontSize: 13
+              }}>
+                До даты
+              </label>
+              <input
+                type="date"
+                value={customDateTo}
+                onChange={onChangeCustomDateTo}
+                style={{
+                  width: "100%",
+                  padding: "6px 8px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: 4,
+                  fontSize: 13
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Счетчик результатов */}
+        <div style={{ 
+          marginTop: 12, 
+          fontSize: 13, 
+          color: "#6b7280",
+          display: "flex",
+          alignItems: "center",
+          gap: 8
+        }}>
+          <span>📊</span>
+          <span>Найдено: {items.length} пропусков</span>
+          {(status || dateFilter) && (
+            <button
+              onClick={() => {
+                setStatus("");
+                setDateFilter("");
+                setCustomDateFrom("");
+                setCustomDateTo("");
+                setPage(0);
+              }}
+              style={{
+                marginLeft: "auto",
+                padding: "4px 8px",
+                fontSize: 12,
+                color: "#6b7280",
+                background: "transparent",
+                border: "1px solid #d1d5db",
+                borderRadius: 4,
+                cursor: "pointer"
+              }}
+            >
+              Сбросить фильтры
+            </button>
+          )}
+        </div>
       </div>
 
       {loading && <div>Загрузка…</div>}
