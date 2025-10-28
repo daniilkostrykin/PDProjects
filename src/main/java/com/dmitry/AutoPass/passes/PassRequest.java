@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "pass_requests", indexes = {
+@Table(name = "pass_requests", schema = "auth", indexes = {
         @Index(name = "idx_pass_user", columnList = "user_id"),
         @Index(name = "idx_pass_status", columnList = "status"),
         @Index(name = "idx_pass_date", columnList = "visit_date")

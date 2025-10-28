@@ -13,3 +13,5 @@ spring:
       ddl-auto: update # или validate в зависимости от вашей стратегии
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true # Полезно для разработки
+  profiles:
+    active: local 

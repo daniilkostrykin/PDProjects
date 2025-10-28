@@ -8,13 +8,15 @@ import lombok.Setter;
 import java.time.Instant;
 
 @Entity
-@Table(name = "refresh_tokens", indexes = {
+@Table(name = "refresh_tokens", schema = "auth", indexes = {
         @Index(name = "idx_refresh_token_token", columnList = "token", unique = true),
         @Index(name = "idx_refresh_token_user", columnList = "user_id")
 })
-@Getter @Setter
+@Getter
+@Setter
 public class RefreshToken {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true, length = 200)
