@@ -40,10 +40,14 @@ public class AuthService {
 
     /** Возвращаем доменную сущность для генерации JWT */
     public User authenticate(LoginRequest req) {
-        var user = users.findByUsername(req.getEmail()) // ищем по email
+        // Ищем сначала по email, затем по username (на случай, если username != email в
+        // сидерах)
+        var user = users.findByEmail(req.getEmail())
+                .or(() -> users.findByUsername(req.getEmail()))
                 .orElseThrow(() -> new BadCredentialsException("User not found"));
-        if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash()))
+        if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash())) {
             throw new BadCredentialsException("Invalid credentials");
+        }
         return user;
     }
 

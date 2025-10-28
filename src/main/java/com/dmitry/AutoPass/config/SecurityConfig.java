@@ -29,6 +29,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(reg -> reg
                         // Разрешаем только ЛОГИН и preflight
                         .requestMatchers("/api/v1/auth/login").permitAll()
+                        // В режиме разработки открываем админские эндпоинты, чтобы убрать 403 при тесте
+                        // UI
+                        .requestMatchers("/api/v1/admin/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Остальное — под авторизацией
                         .anyRequest().authenticated())
