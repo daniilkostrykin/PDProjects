@@ -1,14 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useContext } from 'react';
 import QueueTable from './components/QueueTable';
 import { PassesApi } from '@/services/api/passes.api';
 import ChevronIcon from '@/components/icons/ChevronIcon';
+import { Context } from '@/context';
+import './mobile.css';
 
 export default function AdminQueue() {
+  const { user } = useContext(Context);
   const [passes, setPasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState('PENDING');
   const [dateFilter, setDateFilter] = useState('TODAY'); // TODAY | TOMORROW | WEEK | ALL
   const [search, setSearch] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [page, setPage] = useState(1);
   const pageSize = 20;
@@ -154,12 +158,29 @@ export default function AdminQueue() {
 
   return (
     <div className="page">
+      {/* Mobile Header */}
+      <header className="m-queue-header">
+        <div className="m-brand">AutoPass</div>
+        <div className="m-actions">
+          <button className="m-icon-btn" aria-label="Меню" onClick={()=>setMenuOpen(v=>!v)}>☰</button>
+          <button className="m-icon-btn" aria-label="Выйти" onClick={async()=>{ try{ await user.logout?.(); }catch(_){} window.location.href='/login'; }}>⎋</button>
+        </div>
+        {menuOpen && (
+          <nav className="m-menu">
+            <a href="#/dashboard/admin">Статистика</a>
+            <a href="#/dashboard/admin/approved">Одобренные</a>
+            <a href="#/dashboard/admin/employees">Сотрудники</a>
+            <a href="#/dashboard/admin/reports">Журналы</a>
+            <a href="#/dashboard/admin/settings">Настройки</a>
+          </nav>
+        )}
+      </header>
       <div className="page-header">
         <div className="page-title">
           <h2>Очередь заявок</h2>
           <p className="page-subtitle">Рассмотрение и обработка заявок на пропуска</p>
         </div>
-        <div className="page-actions row" style={{gap:8}}>
+        <div className="page-actions row d-only" style={{gap:8}}>
           <select value={dateFilter} onChange={(e)=> {setPage(1); setDateFilter(e.target.value)}} className="input select">
             <option value="TODAY">Сегодня</option>
             <option value="TOMORROW">Завтра</option>
@@ -168,6 +189,22 @@ export default function AdminQueue() {
           </select>
           <input className="input" placeholder="Поиск по ФИО, авто или причине" value={search} onChange={(e)=> {setPage(1); setSearch(e.target.value)}} />
           <button className="btn" onClick={loadPasses} disabled={loading}>🔄 Обновить</button>
+        </div>
+        {/* Mobile Controls */}
+        <div className="m-filters">
+          <div className="m-row">
+            <select value={dateFilter} onChange={(e)=> {setPage(1); setDateFilter(e.target.value)}} className="input select m-date">
+              <option value="TODAY">Сегодня</option>
+              <option value="TOMORROW">Завра</option>
+              <option value="WEEK">Неделя</option>
+              <option value="ALL">Все даты</option>
+            </select>
+          </div>
+          <div className="m-row m-search">
+            <span className="m-search-icon">🔎</span>
+            <input className="input m-search-input" placeholder="Поиск по ФИО, авто..." value={search} onChange={(e)=> {setPage(1); setSearch(e.target.value)}} />
+            <button className="m-icon-btn" aria-label="Обновить" onClick={loadPasses} disabled={loading}>↻</button>
+          </div>
         </div>
       </div>
 
@@ -183,16 +220,45 @@ export default function AdminQueue() {
         </div>
       )}
 
-      <QueueTable 
-        rows={tableData}
-        loading={loading}
-        onApprove={handleApprove}
-        onReject={handleReject}
-        selectable
-        onToggleSelect={toggleSelect}
-        isSelected={(id)=>selectedIds.has(id)}
-        onToggleSelectAll={selectAllOnPage}
-      />
+      {/* Desktop Table */}
+      <div className="d-only">
+        <QueueTable 
+          rows={tableData}
+          loading={loading}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          selectable
+          onToggleSelect={toggleSelect}
+          isSelected={(id)=>selectedIds.has(id)}
+          onToggleSelectAll={selectAllOnPage}
+        />
+      </div>
+
+      {/* Mobile Cards */}
+      <div className="m-queue-cards">
+        {loading ? (
+          <div className="card">Загрузка…</div>
+        ) : tableData.length === 0 ? (
+          <div className="card muted">Заявки не найдены</div>
+        ) : (
+          tableData.map(row => (
+            <div key={row.id} className="m-card">
+              <div className="m-card-top">
+                <span className="m-date">{row.date}</span>
+                <span className="m-type">{row.passType}</span>
+              </div>
+              <div className="m-card-main">{row.fullName}</div>
+              <div className="m-card-bottom">
+                <span className="m-created">Создана: {row.createdAt}</span>
+                <div className="m-actions-row">
+                  <button className="btn btn--primary" onClick={row.onApprove}>Одобрить</button>
+                  <button className="btn" onClick={row.onReject}>Отклонить</button>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
 
 
       <div className="pagination" style={{marginTop:12}}>
@@ -208,6 +274,12 @@ export default function AdminQueue() {
         <ChevronIcon direction="right" size={14} />
       </button>
     </div>
+      {/* Bottom nav (mobile) */}
+      <div className="m-bottom-nav">
+        <a className="active">Очередь</a>
+        <a href="#/dashboard/admin/approved">Одобренные</a>
+        <a href="#/dashboard/admin/employees">Сотрудники</a>
+      </div>
     </div>
   );
 }
