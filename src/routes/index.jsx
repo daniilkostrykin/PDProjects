@@ -2,6 +2,7 @@
 import AppLayout from '@/components/layout/AppLayout'
 import RoleRedirect from '@/pages/Dashboard/RoleRedirect'
 import Auth from '@/pages/Auth/Auth'
+import HomePage from '@/pages/HomePage'
 
 // user
 import RequestPage from '@/pages/user/RequestPage/RequestPage'
@@ -46,6 +47,8 @@ export const authRoutes = [
     children: [
       // index перенаправляет согласно роли
       { path: '', element: <RoleRedirect /> },
+      // главная страница
+      { path: 'home', element: <HomePage /> },
 
       // user
       { path: USER_REQUEST.replace(`${DASHBOARD_ROUTE}/`, ''), element: <RequestPage /> },

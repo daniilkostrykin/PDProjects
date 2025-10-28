@@ -55,6 +55,27 @@ export const validators = {
     return null;
   },
 
+  time: (value) => {
+    if (value) {
+      // Проверяем формат времени HH:MM
+      if (!/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value)) {
+        return "Некорректное время (формат: ЧЧ:ММ)";
+      }
+
+      // Проверяем, что время не в прошлом для сегодняшней даты
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const selectedTime = new Date(today);
+      const [hours, minutes] = value.split(":").map(Number);
+      selectedTime.setHours(hours, minutes, 0, 0);
+
+      if (selectedTime < now) {
+        return "Время не может быть в прошлом";
+      }
+    }
+    return null;
+  },
+
   carPlate: (value) => {
     if (value) {
       // Российский формат: A000AA77, A000AA777, AA00077, AA000777
@@ -112,6 +133,47 @@ export const validators = {
     }
     return null;
   },
+
+  customValidityPeriod: (value) => {
+    if (!value) return "Введите срок действия";
+
+    // Регулярное выражение для проверки формата: число + единица измерения
+    // Поддерживаемые единицы: m (минуты), h (часы), d (дни), w (недели), M (месяцы)
+    const periodRegex = /^(\d+[mhdwM])(\s+\d+[mhdwM])*$/;
+
+    if (!periodRegex.test(value.trim())) {
+      return "Некорректный формат. Используйте: 30m, 2h, 1d, 1w, 1M или комбинации: 2d 5h";
+    }
+
+    // Проверяем, что значения разумные
+    const parts = value.trim().split(/\s+/);
+    for (const part of parts) {
+      const match = part.match(/^(\d+)([mhdwM])$/);
+      if (match) {
+        const num = parseInt(match[1]);
+        const unit = match[2];
+
+        // Ограничения по единицам
+        if (unit === "m" && (num < 1 || num > 1440)) {
+          return "Минуты: от 1 до 1440 (24 часа)";
+        }
+        if (unit === "h" && (num < 1 || num > 168)) {
+          return "Часы: от 1 до 168 (7 дней)";
+        }
+        if (unit === "d" && (num < 1 || num > 365)) {
+          return "Дни: от 1 до 365";
+        }
+        if (unit === "w" && (num < 1 || num > 52)) {
+          return "Недели: от 1 до 52";
+        }
+        if (unit === "M" && (num < 1 || num > 12)) {
+          return "Месяцы: от 1 до 12";
+        }
+      }
+    }
+
+    return null;
+  },
 };
 
 // Комбинированные валидаторы
@@ -143,6 +205,13 @@ export const validatePassRequest = (formData) => {
   } else {
     const dateError = validators.date(formData.date);
     if (dateError) errors.date = dateError;
+  }
+
+  if (!formData.time) {
+    errors.time = "Выберите время";
+  } else {
+    const timeError = validators.time(formData.time);
+    if (timeError) errors.time = timeError;
   }
 
   if (!formData.reason?.trim()) {

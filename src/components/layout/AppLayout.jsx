@@ -2,7 +2,7 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useContext, useMemo } from 'react';
 import { Context } from '@/context';
-import { LOGIN_ROUTE, DASHBOARD_ROUTE, ADMIN_QUEUE, ADMIN_APPROVED, ADMIN_EMPLOYEES, ADMIN_REPORTS, ADMIN_SETTINGS, USER_REQUEST, USER_PASSES, USER_PROFILE } from '@/utils/consts';
+import { LOGIN_ROUTE, DASHBOARD_ROUTE, HOME_ROUTE, ADMIN_QUEUE, ADMIN_APPROVED, ADMIN_EMPLOYEES, ADMIN_REPORTS, ADMIN_SETTINGS, USER_REQUEST, USER_PASSES, USER_PROFILE } from '@/utils/consts';
 import MobileTabBar from '../MobileTabBar';
 import './AppLayout.css';
 
@@ -39,7 +39,7 @@ export default function AppLayout() {
       {/* Десктопная версия */}
       <header className="topbar desktop-header">
         <div className="topbar__inner container">
-          <NavLink to={DASHBOARD_ROUTE} className="navBrand">AutoPass</NavLink>
+          <NavLink to={HOME_ROUTE} className="navBrand">AutoPass</NavLink>
 
           <nav className="nav">
             {links.map((l) => (
@@ -79,7 +79,7 @@ export default function AppLayout() {
       {/* Мобильная версия - только логотип */}
       <header className="mobile-header">
         <div className="mobile-header__inner">
-          <NavLink to={DASHBOARD_ROUTE} className="mobile-brand">
+          <NavLink to={HOME_ROUTE} className="mobile-brand">
             AutoPass
           </NavLink>
         </div>

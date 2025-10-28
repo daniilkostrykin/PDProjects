@@ -296,7 +296,7 @@ export default function Profile() {
                 Контактный телефон
               </label>
               {isEditing ? (
-                <div>
+    <div>
                   <input
                     type="tel"
                     value={formData.phone}

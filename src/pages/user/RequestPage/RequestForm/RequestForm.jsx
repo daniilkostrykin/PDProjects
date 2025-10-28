@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import PassTypeSelect from '../fields/PassTypeSelect';
 import DateField from '../fields/DateField';
+import TimeField from '../fields/TimeField';
 import FullNameField from '../fields/FullNameField';
 import ReasonField from '../fields/ReasonField';
 import CarBrandField from '../fields/CarBrandField';
 import CarModelField from '../fields/CarModelField';
 import CarPlateField from '../fields/CarPlateField';
-import ValidityPeriodField from '../fields/ValidityPeriodField';
+import CustomValidityPeriodField from '../fields/CustomValidityPeriodField';
 import { validatePassRequest } from '../../../../utils/validation';
 import './mobile.css';
 
@@ -81,7 +82,10 @@ const MobilePassTypeSelector = ({ value, onChange }) => {
   );
 };
 
-const MobileDatePeriodBlock = ({ date, validityPeriod, onDateChange, onPeriodChange }) => {
+const MobileDatePeriodBlock = ({ date, time, validityPeriod, onDateChange, onTimeChange, onPeriodChange }) => {
+  const [isCustomPeriod, setIsCustomPeriod] = useState(false);
+  const [customPeriod, setCustomPeriod] = useState('');
+
   const validityOptions = [
     { label: "1 час", value: "1h", icon: "⏰" },
     { label: "2 часа", value: "2h", icon: "⏰" },
@@ -91,7 +95,24 @@ const MobileDatePeriodBlock = ({ date, validityPeriod, onDateChange, onPeriodCha
     { label: "3 дня", value: "3d", icon: "📅" },
     { label: "1 неделя", value: "1w", icon: "📅" },
     { label: "1 месяц", value: "1m", icon: "📅" },
+    { label: "Свой срок", value: "custom", icon: "✏️" },
   ];
+
+  const handlePeriodChange = (value) => {
+    if (value === 'custom') {
+      setIsCustomPeriod(true);
+      onPeriodChange(customPeriod);
+    } else {
+      setIsCustomPeriod(false);
+      setCustomPeriod('');
+      onPeriodChange(value);
+    }
+  };
+
+  const handleCustomPeriodChange = (value) => {
+    setCustomPeriod(value);
+    onPeriodChange(value);
+  };
 
   return (
     <div style={{ marginBottom: 24 }}>
@@ -136,6 +157,35 @@ const MobileDatePeriodBlock = ({ date, validityPeriod, onDateChange, onPeriodCha
         />
       </div>
 
+      <div style={{ marginBottom: 16 }}>
+        <label style={{ 
+          display: 'block', 
+          fontSize: 14, 
+          fontWeight: 500, 
+          color: '#374151', 
+          marginBottom: 8 
+        }}>
+          Время визита
+        </label>
+        <input
+          type="time"
+          value={time}
+          onChange={(e) => onTimeChange(e.target.value)}
+          className="mobile-input"
+          style={{
+            width: '100%',
+            padding: '16px',
+            border: '2px solid #e5e7eb',
+            borderRadius: 12,
+            fontSize: 16,
+            background: '#ffffff',
+            transition: 'border-color 0.2s ease'
+          }}
+          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+          onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+        />
+      </div>
+
       <div>
         <label style={{ 
           display: 'block', 
@@ -155,7 +205,7 @@ const MobileDatePeriodBlock = ({ date, validityPeriod, onDateChange, onPeriodCha
             <button
               key={option.value}
               type="button"
-              onClick={() => onPeriodChange(option.value)}
+              onClick={() => handlePeriodChange(option.value)}
               style={{
                 padding: '12px 16px',
                 border: validityPeriod === option.value ? '2px solid #3b82f6' : '2px solid #e5e7eb',
@@ -177,6 +227,47 @@ const MobileDatePeriodBlock = ({ date, validityPeriod, onDateChange, onPeriodCha
             </button>
           ))}
         </div>
+
+        {isCustomPeriod && (
+          <div style={{ marginTop: 16 }}>
+            <label style={{ 
+              display: 'block', 
+              fontSize: 14, 
+              fontWeight: 500, 
+              color: '#374151', 
+              marginBottom: 8 
+            }}>
+              Введите свой срок
+            </label>
+            <input
+              type="text"
+              value={customPeriod}
+              onChange={(e) => handleCustomPeriodChange(e.target.value)}
+              placeholder="Например: 2d 5h, 30m, 1w 2d"
+              className="mobile-input"
+              style={{
+                width: '100%',
+                padding: '16px',
+                border: '2px solid #e5e7eb',
+                borderRadius: 12,
+                fontSize: 16,
+                background: '#ffffff',
+                transition: 'border-color 0.2s ease'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+              onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+            />
+            <div style={{ 
+              fontSize: 12, 
+              color: '#6b7280', 
+              marginTop: 8,
+              lineHeight: 1.4
+            }}>
+              Форматы: 30m (минуты), 2h (часы), 1d (дни), 1w (недели), 1M (месяцы)<br/>
+              Можно комбинировать: 2d 5h, 1w 3d
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -446,7 +537,7 @@ export default function RequestForm({ value, onChange, onSubmit, submitting }) {
   };
 
   const hasErrors = Object.values(formErrors).some(error => error);
-  const isFormValid = !hasErrors && v.passType && v.fullName && v.date && v.reason && v.validityPeriod &&
+  const isFormValid = !hasErrors && v.passType && v.fullName && v.date && v.time && v.reason && v.validityPeriod &&
     (v.passType !== 'car' || (v.carBrand && v.carModel && v.carPlate));
 
   return (
@@ -464,23 +555,24 @@ export default function RequestForm({ value, onChange, onSubmit, submitting }) {
         </div>
 
         <div className="cardBody">
-          <div className="grid2">
-            <PassTypeSelect value={v.passType} onChange={set('passType')} resetTrigger={resetTrigger} />
-            <DateField value={v.date} onChange={set('date')} resetTrigger={resetTrigger} />
+        <div className="grid2">
+          <PassTypeSelect value={v.passType} onChange={set('passType')} resetTrigger={resetTrigger} />
+          <DateField value={v.date} onChange={set('date')} resetTrigger={resetTrigger} />
 
-            <FullNameField value={v.fullName} onChange={set('fullName')} resetTrigger={resetTrigger} />
-            <ValidityPeriodField value={v.validityPeriod} onChange={set('validityPeriod')} resetTrigger={resetTrigger} />
+          <TimeField value={v.time} onChange={set('time')} resetTrigger={resetTrigger} />
+          <FullNameField value={v.fullName} onChange={set('fullName')} resetTrigger={resetTrigger} />
 
-            <ReasonField value={v.reason} onChange={set('reason')} resetTrigger={resetTrigger} />
+          <CustomValidityPeriodField value={v.validityPeriod} onChange={set('validityPeriod')} resetTrigger={resetTrigger} />
+          <ReasonField value={v.reason} onChange={set('reason')} resetTrigger={resetTrigger} />
 
-            {v.passType === 'car' && (
-              <>
-                <CarBrandField value={v.carBrand} onChange={set('carBrand')} resetTrigger={resetTrigger} />
-                <CarModelField value={v.carModel} onChange={set('carModel')} resetTrigger={resetTrigger} />
-                <CarPlateField value={v.carPlate} onChange={set('carPlate')} resetTrigger={resetTrigger} />
-              </>
-            )}
-          </div>
+          {v.passType === 'car' && (
+            <>
+              <CarBrandField value={v.carBrand} onChange={set('carBrand')} resetTrigger={resetTrigger} />
+              <CarModelField value={v.carModel} onChange={set('carModel')} resetTrigger={resetTrigger} />
+              <CarPlateField value={v.carPlate} onChange={set('carPlate')} resetTrigger={resetTrigger} />
+            </>
+          )}
+        </div>
 
           <div className="form-actions">
             <button 
@@ -495,16 +587,17 @@ export default function RequestForm({ value, onChange, onSubmit, submitting }) {
               className="btn btn--ghost" 
               type="button"
               onClick={() => {
-                onChange({
-                  passType: '',
-                  date: '',
-                  fullName: '',
-                  reason: '',
-                  validityPeriod: '',
-                  carBrand: '',
-                  carModel: '',
-                  carPlate: ''
-                });
+              onChange({
+                passType: '',
+                date: '',
+                time: '',
+                fullName: '',
+                reason: '',
+                validityPeriod: '',
+                carBrand: '',
+                carModel: '',
+                carPlate: ''
+              });
                 setFormErrors({});
                 setShowErrors(false);
                 setResetTrigger(prev => prev + 1);
@@ -601,8 +694,10 @@ export default function RequestForm({ value, onChange, onSubmit, submitting }) {
             {/* Период визита */}
             <MobileDatePeriodBlock 
               date={v.date} 
+              time={v.time}
               validityPeriod={v.validityPeriod}
               onDateChange={set('date')}
+              onTimeChange={set('time')}
               onPeriodChange={set('validityPeriod')}
             />
 
@@ -658,16 +753,17 @@ export default function RequestForm({ value, onChange, onSubmit, submitting }) {
               type="button"
               className="mobile-button"
               onClick={() => {
-                onChange({
-                  passType: '',
-                  date: '',
-                  fullName: '',
-                  reason: '',
-                  validityPeriod: '',
-                  carBrand: '',
-                  carModel: '',
-                  carPlate: ''
-                });
+              onChange({
+                passType: '',
+                date: '',
+                time: '',
+                fullName: '',
+                reason: '',
+                validityPeriod: '',
+                carBrand: '',
+                carModel: '',
+                carPlate: ''
+              });
                 setFormErrors({});
                 setShowErrors(false);
                 setResetTrigger(prev => prev + 1);

@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom'
 import { useContext } from 'react'
 import { Context } from '../../context'
-import { ADMIN_HOME, USER_REQUEST } from '../../utils/consts'
+import { HOME_ROUTE } from '../../utils/consts'
 
 export default function RoleRedirect() {
   const { user } = useContext(Context)
@@ -12,5 +12,5 @@ export default function RoleRedirect() {
 */
   const isAdmin = true; // <-- ИЗМЕНЕНИЕ
 
-  return <Navigate to={isAdmin ? ADMIN_HOME : USER_REQUEST} replace />
+  return <Navigate to={HOME_ROUTE} replace />
 }

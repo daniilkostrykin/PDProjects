@@ -184,10 +184,10 @@ export default function MyPasses() {
           {
             id: 1,
             type: "CAR",
-            visitDate: "2024-01-15",
+            visitDate: "2024-01-15T14:30:00Z",
             fullName: "Иванов Иван Иванович",
             reason: "Деловая встреча с руководством",
-            validityPeriod: "8h",
+            validityPeriod: "2d 5h",
             carBrand: "Toyota",
             carModel: "Camry",
             carPlate: "А123БВ777",
@@ -200,10 +200,10 @@ export default function MyPasses() {
           {
             id: 2,
             type: "PSH",
-            visitDate: "2024-01-12",
+            visitDate: "2024-01-12T09:15:00Z",
             fullName: "Сидоров Сидор Сидорович",
             reason: "Техническое обслуживание оборудования",
-            validityPeriod: "1d",
+            validityPeriod: "30m",
             carBrand: null,
             carModel: null,
             carPlate: null,
@@ -216,7 +216,7 @@ export default function MyPasses() {
           {
             id: 3,
             type: "CAR",
-            visitDate: "2024-01-08",
+            visitDate: "2024-01-08T16:45:00Z",
             fullName: "Кузнецов Кузьма Кузьмич",
             reason: "Поставка материалов",
             validityPeriod: "4h",
@@ -232,10 +232,10 @@ export default function MyPasses() {
           {
             id: 4,
             type: "CAR",
-            visitDate: "2024-01-20",
+            visitDate: "2024-01-20T10:00:00Z",
             fullName: "Морозов Мороз Морозович",
             reason: "Консультация по проекту",
-            validityPeriod: "1w",
+            validityPeriod: "1w 2d",
             carBrand: "BMW",
             carModel: "X5",
             carPlate: "С789ЕЖ456",
@@ -352,6 +352,7 @@ export default function MyPasses() {
     const passData = {
       ФИО: pass.fullName,
       Дата: formatDate(pass.visitDate),
+      Время: formatTime(pass.visitDate),
       "Срок действия": formatValidityPeriod(pass.validityPeriod),
       Основание: pass.reason,
       Тип: pass.type === "CAR" ? "Автомобильный" : "Пеший",
@@ -394,7 +395,25 @@ export default function MyPasses() {
     try {
       const d = new Date(v);
       if (Number.isNaN(d.getTime())) return String(v);
-      return d.toLocaleString();
+      return d.toLocaleDateString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch (_) {
+      return String(v);
+    }
+  };
+
+  const formatTime = (v) => {
+    if (!v) return "—";
+    try {
+      const d = new Date(v);
+      if (Number.isNaN(d.getTime())) return String(v);
+      return d.toLocaleTimeString('ru-RU', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
     } catch (_) {
       return String(v);
     }
@@ -402,6 +421,8 @@ export default function MyPasses() {
 
   const formatValidityPeriod = (period) => {
     if (!period) return "—";
+    
+    // Стандартные периоды
     const periodMap = {
       "1h": "1 час",
       "2h": "2 часа", 
@@ -412,7 +433,35 @@ export default function MyPasses() {
       "1w": "1 неделя",
       "1m": "1 месяц"
     };
-    return periodMap[period] || period;
+
+    // Если это стандартный период, возвращаем его
+    if (periodMap[period]) {
+      return periodMap[period];
+    }
+
+    // Если это собственный формат, парсим его
+    try {
+      const parts = period.trim().split(/\s+/);
+      const formattedParts = parts.map(part => {
+        const match = part.match(/^(\d+)([mhdwM])$/);
+        if (match) {
+          const num = match[1];
+          const unit = match[2];
+          const unitMap = {
+            'm': 'мин',
+            'h': 'ч',
+            'd': 'дн',
+            'w': 'нед',
+            'M': 'мес'
+          };
+          return `${num} ${unitMap[unit] || unit}`;
+        }
+        return part;
+      });
+      return formattedParts.join(' ');
+    } catch (error) {
+      return period; // Если не удалось распарсить, возвращаем как есть
+    }
   };
 
   return (
@@ -903,6 +952,17 @@ export default function MyPasses() {
                   marginBottom: 8
                 }}>
                   📅 {formatDate(p.visitDate)}
+                </div>
+                <div style={{ 
+                  fontSize: 14, 
+                  fontWeight: 500,
+                  color: "#6b7280",
+                  marginBottom: 8,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6
+                }}>
+                  🕐 {formatTime(p.visitDate)}
                 </div>
                 <div style={{ 
                   fontSize: 14, 
