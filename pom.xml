@@ -101,4 +101,32 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<!-- Дополнительные репозитории на случай проблем с Maven Central -->
+	<repositories>
+		<repository>
+			<id>central</id>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<releases><enabled>true</enabled></releases>
+			<snapshots><enabled>false</enabled></snapshots>
+		</repository>
+		<repository>
+			<id>repo1</id>
+			<url>https://repo1.maven.org/maven2</url>
+			<releases><enabled>true</enabled></releases>
+			<snapshots><enabled>false</enabled></snapshots>
+		</repository>
+		<repository>
+			<id>spring-release</id>
+			<url>https://repo.spring.io/release</url>
+			<releases><enabled>true</enabled></releases>
+			<snapshots><enabled>false</enabled></snapshots>
+		</repository>
+		<repository>
+			<id>aliyun-public</id>
+			<url>https://maven.aliyun.com/repository/public</url>
+			<releases><enabled>true</enabled></releases>
+			<snapshots><enabled>false</enabled></snapshots>
+		</repository>
+	</repositories>
 </project>

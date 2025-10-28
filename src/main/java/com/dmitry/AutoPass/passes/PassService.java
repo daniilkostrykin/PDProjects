@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -74,7 +75,10 @@ public class PassService {
                 "Camry",
                 "А123БВ777",
                 PassStatus.APPROVED,
-                Instant.parse("2024-01-10T10:30:00Z"));
+                Instant.parse("2024-01-10T10:30:00Z"),
+                "Система",
+                LocalDateTime.parse("2024-01-15T08:00:00"),
+                LocalDateTime.parse("2024-01-15T18:00:00"));
     }
 
     @Transactional
@@ -90,7 +94,10 @@ public class PassService {
                 "Camry",
                 "А123БВ777",
                 PassStatus.REJECTED,
-                Instant.parse("2024-01-10T10:30:00Z"));
+                Instant.parse("2024-01-10T10:30:00Z"),
+                "Система",
+                LocalDateTime.parse("2024-01-15T08:00:00"),
+                LocalDateTime.parse("2024-01-15T18:00:00"));
     }
 
     public record Stats(long approved, long pending, long rejected) {
