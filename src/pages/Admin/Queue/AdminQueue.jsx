@@ -160,7 +160,7 @@ export default function AdminQueue() {
           <p className="page-subtitle">Рассмотрение и обработка заявок на пропуска</p>
         </div>
         <div className="page-actions row" style={{gap:8}}>
-          <select value={dateFilter} onChange={(e)=> {setPage(1); setDateFilter(e.target.value)}} className="select">
+          <select value={dateFilter} onChange={(e)=> {setPage(1); setDateFilter(e.target.value)}} className="input select">
             <option value="TODAY">Сегодня</option>
             <option value="TOMORROW">Завтра</option>
             <option value="WEEK">Неделя</option>

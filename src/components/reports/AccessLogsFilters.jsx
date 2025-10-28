@@ -1,5 +1,6 @@
 // src/components/reports/AccessLogsFilters.jsx
 import { useState } from 'react';
+import './reports.css';
 
 export default function AccessLogsFilters({ onFilterChange, checkpoints = [] }) {
   const [filters, setFilters] = useState({
@@ -119,7 +120,7 @@ export default function AccessLogsFilters({ onFilterChange, checkpoints = [] }) 
             <select
               value={pendingFilters.checkpoint}
               onChange={(e) => handleFilterChange('checkpoint', e.target.value)}
-              className="select"
+              className="input select"
             >
               <option value="">Все КПП</option>
               {checkpoints.map(checkpoint => (
@@ -132,7 +133,7 @@ export default function AccessLogsFilters({ onFilterChange, checkpoints = [] }) 
             <select
               value={pendingFilters.eventType}
               onChange={(e) => handleFilterChange('eventType', e.target.value)}
-              className="select"
+              className="input select"
             >
               <option value="">Все события</option>
               <option value="ENTRY">Вход</option>
@@ -144,7 +145,7 @@ export default function AccessLogsFilters({ onFilterChange, checkpoints = [] }) 
             <select
               value={pendingFilters.accessStatus}
               onChange={(e) => handleFilterChange('accessStatus', e.target.value)}
-              className="select"
+              className="input select"
             >
               <option value="">Все статусы</option>
               <option value="GRANTED">Разрешен</option>
@@ -156,7 +157,7 @@ export default function AccessLogsFilters({ onFilterChange, checkpoints = [] }) 
             <select
               value={pendingFilters.department}
               onChange={(e) => handleFilterChange('department', e.target.value)}
-              className="select"
+              className="input select"
             >
               <option value="">Все отделы</option>
               <option value="IT-отдел">IT-отдел</option>

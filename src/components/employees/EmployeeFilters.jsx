@@ -49,7 +49,7 @@ export default function EmployeeFilters({ onFilterChange, departments = [] }) {
             <select
               value={draft.department}
               onChange={(e) => handleDraftChange('department', e.target.value)}
-              className="select"
+              className="input select"
             >
               <option value="">Все отделы</option>
               {departments.map(dept => (
@@ -62,7 +62,7 @@ export default function EmployeeFilters({ onFilterChange, departments = [] }) {
             <select
               value={draft.status}
               onChange={(e) => handleDraftChange('status', e.target.value)}
-              className="select"
+              className="input select"
             >
               <option value="">Все статусы</option>
               <option value="ACTIVE">Активен</option>
@@ -75,7 +75,7 @@ export default function EmployeeFilters({ onFilterChange, departments = [] }) {
             <select
               value={draft.passStatus}
               onChange={(e) => handleDraftChange('passStatus', e.target.value)}
-              className="select"
+              className="input select"
             >
               <option value="">Все пропуска</option>
               <option value="ACTIVE">Активен</option>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
+import '@/styles/theme.css';
 import { Context } from '@/context';
 import AccessDenied from '@/components/common/AccessDenied';
 import AccessLogsTable from '@/components/reports/AccessLogsTable';
