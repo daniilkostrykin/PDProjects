@@ -1,7 +1,7 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-const ACCESS_TOKEN_KEY = 'token';
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+const ACCESS_TOKEN_KEY = "token";
 
 export const $host = axios.create({
   baseURL: API_URL,
@@ -26,13 +26,31 @@ export function removeToken() {
 export function parseUserFromToken(token) {
   try {
     if (!token) return null;
-    const payload = token.split('.')[1];
+    const payload = token.split(".")[1];
     const json = JSON.parse(decodeURIComponent(escape(atob(payload))));
-    // ожидаем поля sub/email/roles — подстрой при необходимости
+    // ожидаем поля sub/email/roles — roles может быть строкой "ADMIN,USER" или массивом
+    let roles = [];
+    if (Array.isArray(json.roles)) {
+      roles = json.roles;
+    } else if (typeof json.roles === "string") {
+      roles = json.roles
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+    } else if (Array.isArray(json.authorities)) {
+      roles = json.authorities;
+    }
+    // Нормализуем к формату ROLE_*
+    roles = roles.map((r) =>
+      typeof r === "string" && r.toUpperCase().startsWith("ROLE_")
+        ? r.toUpperCase()
+        : `ROLE_${String(r).toUpperCase()}`
+    );
+
     return {
-      id: json.userId || json.id || null,
+      id: json.userId || json.uid || json.id || null,
       email: json.email || json.sub || null,
-      roles: Array.isArray(json.roles) ? json.roles : (json.authorities || []),
+      roles,
       raw: json,
     };
   } catch {
@@ -87,9 +105,13 @@ $authHost.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const resp = await $host.post('/api/v1/auth/refresh', {}, { withCredentials: true });
+        const resp = await $host.post(
+          "/api/v1/auth/refresh",
+          {},
+          { withCredentials: true }
+        );
         const newToken = resp?.data?.accessToken || resp?.data?.token;
-        if (!newToken) throw new Error('No access token in refresh response');
+        if (!newToken) throw new Error("No access token in refresh response");
 
         saveToken(newToken);
         processQueue(null, newToken);

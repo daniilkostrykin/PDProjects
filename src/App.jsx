@@ -15,10 +15,7 @@ const App = observer(() => {
   useEffect(() => { setTimeout(() => setLoading(false), 0); }, []);
   if (loading) return <div style={{ padding: 24 }}>Загрузка…</div>;
 
-  // --- ВРЕМЕННОЕ ИЗМЕНЕНИЕ: Имитация авторизованного администратора ---
-  const MOCK_USER = { isAdmin: false, isAuth: true }; 
-  const currentUser = MOCK_USER; // Используем моковый объект вместо реального user
-  // -------------------------------------------------------------------
+  const currentUser = user;
   
   return (
     <Routes>
@@ -38,7 +35,6 @@ const App = observer(() => {
           path={path}
           element={
             <ProtectedRoute>
-              {/* Используем MOCK_USER для обхода проверки adminOnly */}
               {adminOnly && !currentUser.isAdmin ? <Navigate to="/dashboard" replace /> : element}
             </ProtectedRoute>
           }
@@ -49,7 +45,6 @@ const App = observer(() => {
               path={c.path}
               element={
                 <ProtectedRoute>
-                  {/* Используем MOCK_USER для обхода проверки adminOnly */}
                   {c.adminOnly && !currentUser.isAdmin ? <Navigate to="/dashboard" replace /> : c.element}
                 </ProtectedRoute>
               }
@@ -59,7 +54,6 @@ const App = observer(() => {
       ))}
 
       {/* фоллбэк */}
-      {/* Также используем MOCK_USER, чтобы не перекинуло на /login */}
       <Route path="*" element={<Navigate to={currentUser.isAuth ? '/dashboard' : '/login'} replace />} /> 
     </Routes>
   );
