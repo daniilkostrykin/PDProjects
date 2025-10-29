@@ -90,7 +90,7 @@ export default function AppLayout() {
       </main>
 
       {/* Мобильная панель навигации */}
-      {!user?.isAdmin && <MobileTabBar />}
+      <MobileTabBar />
     </>
   );
 }

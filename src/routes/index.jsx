@@ -16,6 +16,7 @@ import AdminApproved from '@/pages/Admin/Approved/AdminApproved'
 import Employees from '@/pages/Admin/Employees'
 import Reports from '@/pages/Admin/Reports'
 import Settings from '@/pages/Admin/Settings'
+import AdminMenu from '@/pages/Admin/Menu/AdminMenu'
 
 // константы путей
 import {
@@ -31,6 +32,7 @@ import {
   ADMIN_EMPLOYEES,
   ADMIN_REPORTS,
   ADMIN_SETTINGS,
+  ADMIN_MENU,
 } from '@/utils/consts'
 
 // Публичные маршруты (доступны, когда пользователь НЕ авторизован)
@@ -62,6 +64,7 @@ export const authRoutes = [
       { path: ADMIN_EMPLOYEES.replace(`${DASHBOARD_ROUTE}/`, ''), element: <Employees />, adminOnly: true },
       { path: ADMIN_REPORTS.replace(`${DASHBOARD_ROUTE}/`, ''), element: <Reports />, adminOnly: true },
       { path: ADMIN_SETTINGS.replace(`${DASHBOARD_ROUTE}/`, ''), element: <Settings />, adminOnly: true },
+      { path: ADMIN_MENU.replace(`${DASHBOARD_ROUTE}/`, ''), element: <AdminMenu />, adminOnly: true },
     ],
   },
 ]

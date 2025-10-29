@@ -1,0 +1,30 @@
+.am-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.am-header {
+  position: sticky;
+  top: 0;
+  z-index: 9;
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+.am-header-title {
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+.am-content {
+  padding: 12px 16px 72px;
+}
+
+@media (min-width: 900px) {
+  .am-header {
+    display: none;
+  }
+}

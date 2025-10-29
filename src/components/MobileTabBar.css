@@ -40,7 +40,8 @@
 }
 
 .mobile-tab.active {
-  background: #eff6ff;
+  background: #3b82f6; /* заливка активной кнопки */
+  color: #ffffff;
 }
 
 .mobile-tab-icon {
@@ -63,8 +64,8 @@
 }
 
 .mobile-tab.active .mobile-tab-label {
-  color: #3b82f6;
-  font-weight: 600;
+  color: #ffffff;
+  font-weight: 700;
 }
 
 /* Индикатор активной вкладки */
@@ -76,7 +77,7 @@
   transform: translateX(-50%);
   width: 24px;
   height: 3px;
-  background: #3b82f6;
+  background: #3b82f6; /* индикатор сверху */
   border-radius: 2px;
 }
 

@@ -5,38 +5,30 @@ import './MobileTabBar.css';
 const MobileTabBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const isAdmin = location.pathname.includes('/dashboard/admin');
   const [activeTab, setActiveTab] = useState(() => {
-    // Определяем активную вкладку на основе текущего пути
     const path = location.pathname;
+    if (path.includes('/admin/home')) return 'home';
+    if (path.includes('/admin/queue')) return 'queue';
+    if (path.includes('/admin/approved')) return 'approved';
+    if (path.includes('/admin/menu')) return 'menu';
     if (path.includes('/request')) return 'request';
     if (path.includes('/passes')) return 'passes';
     if (path.includes('/profile')) return 'profile';
-    return 'request'; // По умолчанию
+    return isAdmin ? 'home' : 'request';
   });
-
-  const tabs = [
-    {
-      id: 'request',
-      label: 'Оформить',
-      icon: '🎫',
-      path: '/dashboard/request',
-      activeIcon: '🎫'
-    },
-    {
-      id: 'passes',
-      label: 'Мои пропуска',
-      icon: '📋',
-      path: '/dashboard/passes',
-      activeIcon: '📋'
-    },
-    {
-      id: 'profile',
-      label: 'Профиль',
-      icon: '👤',
-      path: '/dashboard/profile',
-      activeIcon: '👤'
-    }
-  ];
+  const tabs = isAdmin
+    ? [
+        { id: 'home', label: 'Главная', icon: '🏠', path: '/dashboard/admin/home' },
+        { id: 'queue', label: 'Очередь', icon: '🗂️', path: '/dashboard/admin/queue' },
+        { id: 'approved', label: 'Одобренные', icon: '✅', path: '/dashboard/admin/approved' },
+        { id: 'menu', label: 'Меню', icon: '☰', path: '/dashboard/admin/menu' },
+      ]
+    : [
+        { id: 'request', label: 'Оформить', icon: '🎫', path: '/dashboard/request' },
+        { id: 'passes', label: 'Мои пропуска', icon: '📋', path: '/dashboard/passes' },
+        { id: 'profile', label: 'Профиль', icon: '👤', path: '/dashboard/profile' },
+      ];
 
   const handleTabClick = (tab) => {
     setActiveTab(tab.id);
@@ -53,7 +45,7 @@ const MobileTabBar = () => {
           aria-label={tab.label}
         >
           <div className="mobile-tab-icon">
-            {activeTab === tab.id ? tab.activeIcon : tab.icon}
+            {tab.icon}
           </div>
           <div className="mobile-tab-label">
             {tab.label}

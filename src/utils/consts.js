@@ -13,6 +13,7 @@ export const ADMIN_APPROVED = "/dashboard/admin/approved"; // ← ЭТОГО Н�
 export const ADMIN_EMPLOYEES = "/dashboard/admin/employees";
 export const ADMIN_REPORTS = "/dashboard/admin/reports";
 export const ADMIN_SETTINGS = "/dashboard/admin/settings";
+export const ADMIN_MENU = "/dashboard/admin/menu";
 
 // user
 export const USER_REQUEST = "/dashboard/request";
