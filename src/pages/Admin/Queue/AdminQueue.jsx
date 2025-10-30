@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState, useContext } from 'react';
 import QueueTable from './components/QueueTable';
+import QueueStats from './components/QueueStats';
+import QueueCard from './components/QueueCard';
 import { PassesApi } from '@/services/api/passes.api';
 import ChevronIcon from '@/components/icons/ChevronIcon';
 import { Context } from '@/context';
 import AdminMobileShell from '@/components/layout/AdminMobileShell';
+import EmptyState from '@/components/common/EmptyState';
 import './mobile.css';
 
 export default function AdminQueue() {
@@ -11,16 +14,28 @@ export default function AdminQueue() {
   const [passes, setPasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState('PENDING');
-  const [dateFilter, setDateFilter] = useState('TODAY'); // TODAY | TOMORROW | WEEK | ALL
+  const [dateFilter, setDateFilter] = useState('TODAY'); // TODAY | TOMORROW | WEEK | ALL | CUSTOM
+  const [customDate, setCustomDate] = useState('');
   const [search, setSearch] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [page, setPage] = useState(1);
   const pageSize = 20;
+  const [stats, setStats] = useState({ total: 0, today: 0, pending: 0 });
 
   useEffect(() => {
     loadPasses();
+    loadStats();
   }, [status, page]);
+
+  const loadStats = async () => {
+    try {
+      const data = await PassesApi.stats();
+      setStats(data);
+    } catch (error) {
+      console.error('Ошибка загрузки статистики:', error);
+    }
+  };
 
   const loadPasses = async () => {
     setLoading(true);
@@ -74,27 +89,39 @@ export default function AdminQueue() {
   };
 
   const applyDateFilter = (pass) => {
-    if (dateFilter === 'ALL') return true;
     const visit = new Date(pass.visitDate);
-    if (isNaN(visit.getTime())) return true;
+    if (isNaN(visit.getTime())) return true; // Если дата некорректна, включаем в фильтр
+
     const now = new Date();
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-    if (dateFilter === 'TODAY') return visit >= startOfDay && visit < endOfDay;
-    if (dateFilter === 'TOMORROW') {
-      const start = new Date(startOfDay);
-      start.setDate(start.getDate() + 1);
-      const end = new Date(endOfDay);
-      end.setDate(end.getDate() + 1);
-      return visit >= start && visit < end;
+    now.setHours(0, 0, 0, 0); // Начало текущего дня
+
+    switch (dateFilter) {
+      case 'ALL':
+        return true;
+      case 'TODAY':
+        const todayEnd = new Date(now);
+        todayEnd.setDate(now.getDate() + 1);
+        return visit >= now && visit < todayEnd;
+      case 'TOMORROW':
+        const tomorrowStart = new Date(now);
+        tomorrowStart.setDate(now.getDate() + 1);
+        const tomorrowEnd = new Date(now);
+        tomorrowEnd.setDate(now.getDate() + 2);
+        return visit >= tomorrowStart && visit < tomorrowEnd;
+      case 'WEEK':
+        const weekEnd = new Date(now);
+        weekEnd.setDate(now.getDate() + 7);
+        return visit >= now && visit < weekEnd;
+      case 'CUSTOM':
+        if (!customDate) return true; // Если выбрана CUSTOM, но дата не указана, включаем все
+        const selected = new Date(customDate);
+        selected.setHours(0, 0, 0, 0);
+        const selectedEnd = new Date(selected);
+        selectedEnd.setDate(selected.getDate() + 1);
+        return visit >= selected && visit < selectedEnd;
+      default:
+        return true;
     }
-    if (dateFilter === 'WEEK') {
-      const start = new Date(startOfDay);
-      const end = new Date(startOfDay);
-      end.setDate(end.getDate() + 7);
-      return visit >= start && visit < end;
-    }
-    return true;
   };
 
   const filtered = useMemo(() => {
@@ -159,20 +186,33 @@ export default function AdminQueue() {
 
   const mobileContent = (
     <>
-      <div className="m-subtitle">Рассмотрение и обработка заявок на пропуска</div>
+      <QueueStats total={stats.total} today={stats.today} pending={stats.pending} />
       <div className="m-filters">
         <div className="m-row">
           <select value={dateFilter} onChange={(e)=> {setPage(1); setDateFilter(e.target.value)}} className="input select m-date">
             <option value="TODAY">Сегодня</option>
             <option value="TOMORROW">Завтра</option>
-            <option value="WEEK">Неделя</option>
-            <option value="ALL">Все даты</option>
+            <option value="WEEK">На этой неделе</option>
+            <option value="ALL">Все</option>
+            <option value="CUSTOM">Выбрать дату</option>
           </select>
+          {dateFilter === 'CUSTOM' && (
+            <input
+              type="date"
+              className="input m-date-picker"
+              value={customDate}
+              onChange={(e) => { setPage(1); setCustomDate(e.target.value); }}
+            />
+          )}
         </div>
-        <div className="m-row m-search">
-          <span className="m-search-icon">🔎</span>
-          <input className="input m-search-input" placeholder="Поиск по ФИО, авто..." value={search} onChange={(e)=> {setPage(1); setSearch(e.target.value)}} />
-          <button className="m-icon-btn" aria-label="Обновить" onClick={loadPasses} disabled={loading}>↻</button>
+        <div className="m-row m-search-container">
+          <div className="m-search">
+            <span className="m-search-icon">🔎</span>
+            <input className="input m-search-input" placeholder="Поиск по ФИО, авто..." value={search} onChange={(e)=> {setPage(1); setSearch(e.target.value)}} />
+            {search && (
+              <button className="m-clear-search-btn" onClick={() => setSearch('')}>✖</button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -180,23 +220,21 @@ export default function AdminQueue() {
         {loading ? (
           <div className="card">Загрузка…</div>
         ) : tableData.length === 0 ? (
-          <div className="card muted">Заявки не найдены</div>
+          <EmptyState icon="📭" message="Очередь пуста. Новые заявки появятся здесь." />
         ) : (
           tableData.map(row => (
-            <div key={row.id} className="m-card">
-              <div className="m-card-top">
-                <span className="m-date">{row.date}</span>
-                <span className="m-type">{row.passType}</span>
-              </div>
-              <div className="m-card-main">{row.fullName}</div>
-              <div className="m-card-bottom">
-                <span className="m-created">Создана: {row.createdAt}</span>
-                <div className="m-actions-row">
-                  <button className="btn btn--primary" onClick={row.onApprove}>Одобрить</button>
-                  <button className="btn" onClick={row.onReject}>Отклонить</button>
-                </div>
-              </div>
-            </div>
+            <QueueCard
+              key={row.id}
+              id={row.id}
+              date={row.date}
+              fullName={row.fullName}
+              passType={row.passType}
+              createdAt={row.createdAt}
+              reason={row.reason}
+              carInfo={row.carInfo}
+              onApprove={row.onApprove}
+              onReject={row.onReject}
+            />
           ))
         )}
       </div>
@@ -212,22 +250,6 @@ export default function AdminQueue() {
   return (
     <div className="page">
       {/* Mobile Header (бургер слева, заголовок по центру) */}
-      <header className="m-queue-header">
-        <div className="m-actions">
-          <button className="m-icon-btn" aria-label="Меню" onClick={()=>setMenuOpen(v=>!v)}>☰</button>
-        </div>
-        <div className="m-title">Очередь заявок</div>
-        <div className="m-actions" aria-hidden="true" />
-        {menuOpen && (
-          <nav className="m-menu">
-            <a href="#/dashboard/admin">Статистика</a>
-            <a href="#/dashboard/admin/approved">Одобренные</a>
-            <a href="#/dashboard/admin/employees">Сотрудники</a>
-            <a href="#/dashboard/admin/reports">Журналы</a>
-            <a href="#/dashboard/admin/settings">Настройки</a>
-          </nav>
-        )}
-      </header>
       {/* Desktop header/title + filters (desktop only) */}
       <div className="page-header d-only">
         <div className="page-title">
@@ -238,10 +260,24 @@ export default function AdminQueue() {
           <select value={dateFilter} onChange={(e)=> {setPage(1); setDateFilter(e.target.value)}} className="input select">
             <option value="TODAY">Сегодня</option>
             <option value="TOMORROW">Завтра</option>
-            <option value="WEEK">Неделя</option>
-            <option value="ALL">Все даты</option>
+            <option value="WEEK">На этой неделе</option>
+            <option value="ALL">Все</option>
+            <option value="CUSTOM">Выбрать дату</option>
           </select>
-          <input className="input" placeholder="Поиск по ФИО, авто или причине" value={search} onChange={(e)=> {setPage(1); setSearch(e.target.value)}} />
+          {dateFilter === 'CUSTOM' && (
+            <input
+              type="date"
+              className="input"
+              value={customDate}
+              onChange={(e) => { setPage(1); setCustomDate(e.target.value); }}
+            />
+          )}
+          <div className="m-search-desktop-wrapper">
+            <input className="input" placeholder="Поиск по ФИО, авто или причине" value={search} onChange={(e)=> {setPage(1); setSearch(e.target.value)}} />
+            {search && (
+              <button className="m-clear-search-btn desktop" onClick={() => setSearch('')}>✖</button>
+            )}
+          </div>
           <button className="btn btn--sm" title="Обновить" onClick={loadPasses} disabled={loading}>↻</button>
         </div>
       </div>
@@ -296,11 +332,6 @@ export default function AdminQueue() {
       </button>
     </div>
       {/* Bottom nav (mobile) */}
-      <div className="m-bottom-nav">
-        <a className="active">Очередь</a>
-        <a href="#/dashboard/admin/approved">Одобренные</a>
-        <a href="#/dashboard/admin/employees">Сотрудники</a>
-      </div>
     </div>
   );
 }

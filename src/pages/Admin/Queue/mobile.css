@@ -6,49 +6,6 @@
 }
 
 /* Header */
-.m-queue-header {
-  position: sticky;
-  top: 0;
-  z-index: 9;
-  display: grid;
-  grid-template-columns: 48px 1fr 48px;
-  align-items: center;
-  padding: 12px 16px;
-  background: var(--panel);
-  border-bottom: 1px solid var(--border);
-}
-.m-title {
-  text-align: center;
-  font-weight: 800;
-  letter-spacing: 0.2px;
-}
-.m-brand {
-  font-weight: 800;
-  letter-spacing: 0.3px;
-}
-.m-actions {
-  display: flex;
-  gap: 8px;
-}
-.m-icon-btn {
-  appearance: none;
-  border: 1px solid var(--border);
-  background: #fff;
-  border-radius: 10px;
-  padding: 8px 10px;
-  cursor: pointer;
-}
-.m-menu {
-  display: grid;
-  gap: 6px;
-  padding: 10px 0 0 0;
-}
-.m-menu a {
-  text-decoration: none;
-  color: inherit;
-  padding: 8px 0;
-  border-bottom: 1px dashed var(--border);
-}
 
 /* Filters */
 .m-filters {
@@ -69,17 +26,65 @@
 .m-date {
   flex: 0 0 auto;
 }
-.m-search {
-  position: relative;
+.m-filters {
+  display: flex;
+  flex-direction: column; /* Изменено на column для вертикальной группировки */
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: var(--color-bg-secondary); /* Добавлена общая подложка */
+  border-radius: 12px; /* Скругление углов */
+  margin-bottom: 20px; /* Отступ снизу */
 }
+
+.m-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%; /* Занимать всю ширину */
+}
+
+.m-search-container {
+  position: relative;
+  flex: 1; /* Занимает доступное пространство */
+}
+
 .m-search-icon {
   position: absolute;
   left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
   opacity: 0.6;
   pointer-events: none;
 }
+
 .m-search-input {
+  width: 100%;
   padding-left: 34px;
+  padding-right: 34px; /* Добавлено для кнопки очистки */
+  border-radius: 8px;
+}
+
+.m-clear-search-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.m-clear-search-btn.desktop {
+  right: 8px;
 }
 
 /* Cards */
@@ -124,29 +129,12 @@
 }
 
 /* Bottom navigation */
-.m-bottom-nav {
-  position: sticky;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--panel);
-  border-top: 1px solid var(--border);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-}
-.m-bottom-nav a {
-  text-align: center;
-  padding: 12px 8px;
-  text-decoration: none;
-  color: inherit;
-  border-right: 1px solid var(--border);
-}
-.m-bottom-nav a:last-child {
-  border-right: 0;
-}
-.m-bottom-nav a.active {
-  color: var(--primary);
-  font-weight: 700;
+.m-date-picker {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 14px;
 }
 
 /* Desktop overrides */

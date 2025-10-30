@@ -1,0 +1,65 @@
+.card {
+  background-color: var(--color-bg-secondary);
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-sm);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.date {
+  font-weight: bold;
+  color: var(--color-primary);
+}
+
+.passType {
+  /* Style for pass type */
+}
+
+.cardBody {
+  margin-bottom: 15px;
+}
+
+.fullName {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.carInfo, .reason, .createdAt {
+  font-size: 14px;
+  color: var(--color-text-primary);
+  margin-bottom: 3px;
+}
+
+.cardActions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.button {
+  padding: 8px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+}
+
+.approveButton {
+  background-color: var(--color-success);
+  color: white;
+}
+
+.rejectButton {
+  background-color: var(--color-danger);
+  color: white;
+}
