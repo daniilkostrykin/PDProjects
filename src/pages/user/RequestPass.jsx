@@ -1,13 +1,15 @@
 import { useState } from 'react';
+import { PassesApi } from '../../services/api/passes.api';
 
 export default function RequestPass() {
   const [form, setForm] = useState({ fullName: '', company: '', dateFrom: '', dateTo: '', reason: '' });
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    // TODO: POST на твой /passes/request
-    alert('Заявка отправлена (демо)');
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    await PassesApi.create(data);
   };
 
   return (
