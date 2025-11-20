@@ -40,7 +40,7 @@ public class JwtService {
 
     public String getSubject(String token) {
         var key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        return Jwts.parserBuilder().setSigningKey(key).build()
+        return Jwts.parser().setSigningKey(key).build()
                 .parseClaimsJws(token).getBody().getSubject();
     }
 }

@@ -28,7 +28,7 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(reg -> reg
                         // Разрешаем только ЛОГИН и preflight
-                        .requestMatchers("/api/v1/auth/login").permitAll()
+                        .requestMatchers("/api/v1/auth/login", "/api/v1/auth/register").permitAll()
                         // В режиме разработки открываем админские эндпоинты, чтобы убрать 403 при тесте
                         // UI
                         .requestMatchers("/api/v1/admin/**").permitAll()
