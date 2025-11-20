@@ -1,0 +1,9 @@
+.container { margin: 10px 0; }
+.input {
+  width:100%;
+  padding:10px 12px;
+  border:1px solid #d9d9d9;
+  border-radius:10px;
+  outline:none;
+}
+.input:focus { border-color:#1f64ff; box-shadow:0 0 0 3px rgba(31,100,255,0.12); }

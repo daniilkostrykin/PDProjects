@@ -1,0 +1,10 @@
+.btn {
+  width:100%;
+  padding:10px 14px;
+  border-radius:10px;
+  border:1px solid #1f64ff;
+  background:#1f64ff;
+  color:#fff;
+  cursor:pointer;
+}
+.btn:disabled { opacity:.7; cursor:not-allowed; }
