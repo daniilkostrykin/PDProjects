@@ -1,0 +1,71 @@
+-- Migration V2: add invited_by and valid period columns
+ALTER TABLE pass_requests
+    ADD COLUMN IF NOT EXISTS invited_by varchar(255);
+ALTER TABLE pass_requests
+    ADD COLUMN IF NOT EXISTS valid_from timestamp null;
+ALTER TABLE pass_requests
+    ADD COLUMN IF NOT EXISTS valid_to timestamp null;
+
+CREATE SCHEMA IF NOT EXISTS auth;
+CREATE EXTENSION IF NOT EXISTS citext;
+
+CREATE TABLE auth.users (
+    id UUID PRIMARY KEY,
+    email CITEXT NOT NULL UNIQUE,
+    password_hash VARCHAR(100) NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    email_verified BOOLEAN NOT NULL DEFAULT false,
+    status TEXT NOT NULL DEFAULT 'ACTIVE',
+    failed_logins INT NOT NULL DEFAULT 0,
+    last_login_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE auth.email_verifications(
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    code TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+
+CREATE INDEX ON auth.email_verifications(user_id);
+CREATE INDEX ON auth.email_verifications(code);
+
+CREATE TABLE auth.password_resets(
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    code TEXT NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    used_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX ON auth.password_resets(user_id);
+CREATE INDEX ON auth.password_resets(code);
+
+CREATE TABLE auth.refresh_tokens(
+    token_id UUID PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    token_hash TEXT NOT NULL,
+    user_agent TEXT,
+    ip INET,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    expires_at TIMESTAMPTZ NOT NULL,
+    revoked_at TIMESTAMPTZ
+);
+
+CREATE INDEX ON auth.refresh_tokens(user_id);
+CREATE INDEX ON auth.refresh_tokens(expires_at);
+
+CREATE TABLE auth.auth_audit(
+    id BIGSERIAL PRIMARY KEY,
+    user_id UUID,
+    event TEXT NOT NULL,
+    ip INET,
+    user_agent TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX ON auth.auth_audit(user_id, created_at);
