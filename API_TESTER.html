@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🚀 AutoPass API Tester</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 2.5em;
+        font-weight: 300;
+      }
+      .header p {
+        margin: 10px 0 0 0;
+        opacity: 0.9;
+        font-size: 1.1em;
+      }
+      .content {
+        padding: 30px;
+      }
+
+      /* Результат вверху */
+      .result {
+        margin-bottom: 30px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        border-left: 4px solid #007bff;
+        font-family: "Courier New", monospace;
+        font-size: 0.9em;
+        white-space: pre-wrap;
+        max-height: 400px;
+        overflow-y: auto;
+        display: none;
+      }
+      .result.success {
+        border-left-color: #28a745;
+        background: #d4edda;
+      }
+      .result.error {
+        border-left-color: #dc3545;
+        background: #f8d7da;
+      }
+
+      /* Две колонки */
+      .columns {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+      }
+
+      .column {
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .column-header {
+        background: #f8f9fa;
+        padding: 20px;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 1.3em;
+        font-weight: 600;
+        color: #333;
+        text-align: center;
+      }
+
+      .backend-header {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+      }
+
+      .frontend-header {
+        background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+        color: white;
+      }
+
+      .section {
+        margin-bottom: 20px;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .section-header {
+        background: #f8f9fa;
+        padding: 15px;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 1.1em;
+        font-weight: 600;
+        color: #333;
+      }
+      .endpoint {
+        padding: 15px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: background 0.3s;
+      }
+      .endpoint:hover {
+        background: #f8f9fa;
+      }
+      .endpoint:last-child {
+        border-bottom: none;
+      }
+      .endpoint-info {
+        flex: 1;
+      }
+      .method {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8em;
+        font-weight: 600;
+        margin-right: 15px;
+        min-width: 60px;
+        text-align: center;
+      }
+      .get {
+        background: #d4edda;
+        color: #155724;
+      }
+      .post {
+        background: #cce5ff;
+        color: #004085;
+      }
+      .put {
+        background: #fff3cd;
+        color: #856404;
+      }
+      .delete {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .path {
+        font-family: "Courier New", monospace;
+        font-size: 1em;
+        color: #333;
+        margin-right: 15px;
+      }
+      .description {
+        color: #666;
+        font-size: 0.85em;
+        margin-top: 5px;
+      }
+      .test-btn {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.85em;
+        transition: background 0.3s;
+      }
+      .test-btn:hover {
+        background: #0056b3;
+      }
+      .quick-links {
+        background: #e3f2fd;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+      }
+      .quick-links h3 {
+        margin-top: 0;
+        color: #1976d2;
+      }
+      .quick-link {
+        display: inline-block;
+        margin: 5px 10px 5px 0;
+        padding: 8px 16px;
+        background: #1976d2;
+        color: white;
+        text-decoration: none;
+        border-radius: 20px;
+        font-size: 0.9em;
+        transition: background 0.3s;
+      }
+      .quick-link:hover {
+        background: #1565c0;
+      }
+
+      /* Адаптивность */
+      @media (max-width: 768px) {
+        .columns {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🚀 AutoPass API Tester</h1>
+        <p>Интерактивное тестирование REST API - просто кликайте по кнопкам!</p>
+      </div>
+
+      <div class="content">
+        <!-- Результат вверху -->
+        <div id="result" class="result"></div>
+
+        <div class="quick-links">
+          <h3>🔗 Быстрые ссылки:</h3>
+          <a href="http://localhost:5173" class="quick-link" target="_blank"
+            >Frontend</a
+          >
+          <a
+            href="http://localhost:8080/api/v1/admin/passes/stats"
+            class="quick-link"
+            target="_blank"
+            >Статистика</a
+          >
+          <a
+            href="http://localhost:8080/api/v1/admin/employees"
+            class="quick-link"
+            target="_blank"
+            >Сотрудники</a
+          >
+          <a
+            href="http://localhost:8080/api/v1/admin/reports/access-logs"
+            class="quick-link"
+            target="_blank"
+            >Журнал</a
+          >
+        </div>
+
+        <!-- Две колонки -->
+        <div class="columns">
+          <!-- Backend API -->
+          <div class="column">
+            <div class="column-header backend-header">
+              🔧 Backend API (localhost:8080)
+            </div>
+
+            <!-- Backend API секции -->
+            <div class="section">
+              <div class="section-header">🔐 Аутентификация</div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method post">POST</span>
+                  <span class="path">/api/v1/auth/register</span>
+                  <div class="description">Регистрация пользователя</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="testEndpoint('POST', '/api/v1/auth/register', {email: 'test@example.com', password: 'password123'})"
+                >
+                  Тест
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method post">POST</span>
+                  <span class="path">/api/v1/auth/login</span>
+                  <div class="description">Вход (admin@local / admin)</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="testEndpoint('POST', '/api/v1/auth/login', {email: 'admin@local', password: 'admin'})"
+                >
+                  Тест
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method post">POST</span>
+                  <span class="path">/api/v1/auth/logout</span>
+                  <div class="description">Выход из системы</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="testEndpoint('POST', '/api/v1/auth/logout')"
+                >
+                  Тест
+                </button>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-header">🎫 Пропуска</div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method post">POST</span>
+                  <span class="path">/api/v1/passes</span>
+                  <div class="description">Создать пропуск</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="testEndpoint('POST', '/api/v1/passes', {type: 'CAR', fullName: 'Иван Иванов', visitDate: '2024-01-15', reason: 'Деловая встреча', carBrand: 'Toyota', carModel: 'Camry', carPlate: 'А123БВ777'})"
+                >
+                  Тест
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/api/v1/passes</span>
+                  <div class="description">Мои пропуска</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="testEndpoint('GET', '/api/v1/passes?status=pending&page=0&size=20')"
+                >
+                  Тест
+                </button>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-header">👨‍💼 Админ-панель</div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/api/v1/admin/passes/stats</span>
+                  <div class="description">Статистика пропусков</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="testEndpoint('GET', '/api/v1/admin/passes/stats')"
+                >
+                  Тест
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/api/v1/admin/passes</span>
+                  <div class="description">Очередь заявок</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="testEndpoint('GET', '/api/v1/admin/passes?status=PENDING&page=0&size=20')"
+                >
+                  Тест
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method post">POST</span>
+                  <span class="path">/api/v1/admin/passes/1/approve</span>
+                  <div class="description">Одобрить пропуск</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="testEndpoint('POST', '/api/v1/admin/passes/1/approve')"
+                >
+                  Тест
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method post">POST</span>
+                  <span class="path">/api/v1/admin/passes/1/reject</span>
+                  <div class="description">Отклонить пропуск</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="testEndpoint('POST', '/api/v1/admin/passes/1/reject')"
+                >
+                  Тест
+                </button>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-header">👥 Сотрудники</div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/api/v1/admin/employees</span>
+                  <div class="description">Список сотрудников</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="testEndpoint('GET', '/api/v1/admin/employees')"
+                >
+                  Тест
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/api/v1/admin/employees/stats</span>
+                  <div class="description">Статистика сотрудников</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="testEndpoint('GET', '/api/v1/admin/employees/stats')"
+                >
+                  Тест
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method post">POST</span>
+                  <span class="path">/api/v1/admin/employees</span>
+                  <div class="description">Создать сотрудника</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="testEndpoint('POST', '/api/v1/admin/employees', {firstName: 'Алексей', lastName: 'Смирнов', middleName: 'Иванович', department: 'IT-отдел', position: 'Тестировщик', email: 'alexey.smirnov@company.com', phone: '+7 (999) 987-65-43'})"
+                >
+                  Тест
+                </button>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-header">📊 Отчеты</div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/api/v1/admin/reports/access-logs</span>
+                  <div class="description">Журнал доступа</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="testEndpoint('GET', '/api/v1/admin/reports/access-logs')"
+                >
+                  Тест
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path"
+                    >/api/v1/admin/reports/access-logs/stats</span
+                  >
+                  <div class="description">Статистика журнала</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="testEndpoint('GET', '/api/v1/admin/reports/access-logs/stats')"
+                >
+                  Тест
+                </button>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-header">⚙️ Настройки системы</div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/api/v1/admin/settings</span>
+                  <div class="description">Получить настройки</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="testEndpoint('GET', '/api/v1/admin/settings')"
+                >
+                  Тест
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method put">PUT</span>
+                  <span class="path">/api/v1/admin/settings</span>
+                  <div class="description">Обновить настройки</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="testEndpoint('PUT', '/api/v1/admin/settings', {maxPassesPerDay: 100, passValidityDays: 60, emailNotifications: true})"
+                >
+                  Тест
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/api/v1/admin/settings/users</span>
+                  <div class="description">Список пользователей</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="testEndpoint('GET', '/api/v1/admin/settings/users')"
+                >
+                  Тест
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method post">POST</span>
+                  <span class="path">/api/v1/admin/settings/users</span>
+                  <div class="description">Создать пользователя</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="testEndpoint('POST', '/api/v1/admin/settings/users', {username: 'newuser', email: 'newuser@company.com', role: 'USER'})"
+                >
+                  Тест
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method post">POST</span>
+                  <span class="path">/api/v1/admin/settings/users/1/block</span>
+                  <div class="description">Заблокировать пользователя</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="testEndpoint('POST', '/api/v1/admin/settings/users/1/block')"
+                >
+                  Тест
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Frontend -->
+          <div class="column">
+            <div class="column-header frontend-header">
+              🎨 Frontend (localhost:5173)
+            </div>
+
+            <div class="section">
+              <div class="section-header">🏠 Главные страницы</div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/</span>
+                  <div class="description">Главная страница</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="openFrontend('http://localhost:5173')"
+                >
+                  Открыть
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/dashboard</span>
+                  <div class="description">Дашборд (автоперенаправление)</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="openFrontend('http://localhost:5173/dashboard')"
+                >
+                  Открыть
+                </button>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-header">👨‍💼 Админ-панель</div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/dashboard/admin</span>
+                  <div class="description">Главная админа (KPI)</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="openFrontend('http://localhost:5173/dashboard/admin')"
+                >
+                  Открыть
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/dashboard/admin/queue</span>
+                  <div class="description">Очередь заявок</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="openFrontend('http://localhost:5173/dashboard/admin/queue')"
+                >
+                  Открыть
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/dashboard/admin/approved</span>
+                  <div class="description">Одобренные пропуска</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="openFrontend('http://localhost:5173/dashboard/admin/approved')"
+                >
+                  Открыть
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/dashboard/admin/employees</span>
+                  <div class="description">Управление сотрудниками</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="openFrontend('http://localhost:5173/dashboard/admin/employees')"
+                >
+                  Открыть
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/dashboard/admin/reports</span>
+                  <div class="description">Отчеты и журналы</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="openFrontend('http://localhost:5173/dashboard/admin/reports')"
+                >
+                  Открыть
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/dashboard/admin/settings</span>
+                  <div class="description">Настройки системы</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="openFrontend('http://localhost:5173/dashboard/admin/settings')"
+                >
+                  Открыть
+                </button>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-header">👤 Пользователь</div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/dashboard/request</span>
+                  <div class="description">Оформить пропуск</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="openFrontend('http://localhost:5173/dashboard/request')"
+                >
+                  Открыть
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/dashboard/passes</span>
+                  <div class="description">Мои пропуска</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="openFrontend('http://localhost:5173/dashboard/passes')"
+                >
+                  Открыть
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/dashboard/profile</span>
+                  <div class="description">Профиль пользователя</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="openFrontend('http://localhost:5173/dashboard/profile')"
+                >
+                  Открыть
+                </button>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-header">🔐 Аутентификация</div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/login</span>
+                  <div class="description">Страница входа</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="openFrontend('http://localhost:5173/login')"
+                >
+                  Открыть
+                </button>
+              </div>
+              <div class="endpoint">
+                <div class="endpoint-info">
+                  <span class="method get">GET</span>
+                  <span class="path">/register</span>
+                  <div class="description">Страница регистрации</div>
+                </div>
+                <button
+                  class="test-btn"
+                  onclick="openFrontend('http://localhost:5173/register')"
+                >
+                  Открыть
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      async function testEndpoint(method, path, body = null) {
+        const resultDiv = document.getElementById("result");
+        resultDiv.style.display = "block";
+        resultDiv.innerHTML = "⏳ Выполняется запрос...";
+        resultDiv.className = "result";
+
+        try {
+          const url = `http://localhost:8080${path}`;
+          const options = {
+            method: method,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          };
+
+          if (body && (method === "POST" || method === "PUT")) {
+            options.body = JSON.stringify(body);
+          }
+
+          const response = await fetch(url, options);
+          const data = await response.text();
+
+          let result = `🔧 Backend API Test\n`;
+          result += `📡 ${method} ${path}\n`;
+          result += `📊 Статус: ${response.status} ${response.statusText}\n`;
+          result += `⏰ Время: ${new Date().toLocaleTimeString()}\n\n`;
+
+          try {
+            const jsonData = JSON.parse(data);
+            result += `📄 Ответ:\n${JSON.stringify(jsonData, null, 2)}`;
+          } catch {
+            result += `📄 Ответ:\n${data}`;
+          }
+
+          resultDiv.innerHTML = result;
+          resultDiv.className = `result ${response.ok ? "success" : "error"}`;
+        } catch (error) {
+          resultDiv.innerHTML = `❌ Ошибка подключения: ${error.message}\n\n💡 Убедитесь, что backend запущен на localhost:8080`;
+          resultDiv.className = "result error";
+        }
+      }
+
+      function openFrontend(url) {
+        const resultDiv = document.getElementById("result");
+        resultDiv.style.display = "block";
+        resultDiv.innerHTML = `🎨 Frontend Test\n📡 Открытие: ${url}\n⏰ Время: ${new Date().toLocaleTimeString()}\n\n💡 Открывается в новой вкладке...`;
+        resultDiv.className = "result success";
+
+        // Открываем в новой вкладке
+        window.open(url, "_blank");
+      }
+    </script>
+  </body>
+</html>

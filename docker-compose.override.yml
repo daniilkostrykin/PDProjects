@@ -1,0 +1,29 @@
+# Файл: docker-compose.override.yml
+# Этот файл содержит ИЗМЕНЕНИЯ для режима разработки
+
+services:
+  frontend:
+    # 1. Указываем, что нужно использовать другой Dockerfile для разработки
+    build:
+      dockerfile: Dockerfile.dev
+    
+    # 2. Меняем порт. Dev-сервер Vite работает на порту 5173
+    ports:
+      - "${FRONTEND_DEV_PORT}:${FRONTEND_DEV_PORT}"
+      
+    # 3. САМОЕ ГЛАВНОЕ: Запускаем dev-сервер вместо Nginx
+    # Эта команда переопределит CMD из Dockerfile
+    command: npm run dev
+
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - VITE_API_URL=${VITE_API_URL} # Передаем URL API из .env
+      - WATCHPACK_POLLING=true
+      - VITE_HOST=0.0.0.0
+
+    # Для корректного HMR в Docker на Windows/WSL
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    # Секция volumes у вас уже есть в основном файле, повторять не нужно.
+    # Docker-compose их объединит.

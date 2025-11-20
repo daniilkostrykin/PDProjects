@@ -1,0 +1,17 @@
+Нашёл конфигурацию роутера и констант путей. Ниже даю соответствие URL → файл компонента.
+/login → frontend/src/pages/Auth/Auth.jsx
+/register → frontend/src/pages/Auth/Auth.jsx
+/dashboard → обёртка frontend/src/components/layout/AppLayout.jsx, индекс перенаправляет через frontend/src/pages/Dashboard/RoleRedirect.jsx
+/dashboard/request → frontend/src/pages/user/RequestPage/RequestPage.jsx
+/dashboard/passes → frontend/src/pages/user/MyPasses.jsx
+/dashboard/profile → frontend/src/pages/user/Profile.jsx
+/dashboard/admin → frontend/src/pages/Admin/Home/AdminHome.jsx
+/dashboard/admin/queue → frontend/src/pages/Admin/Queue/AdminQueue.jsx
+/dashboard/admin/approved → frontend/src/pages/Admin/Approved/AdminApproved.jsx
+/dashboard/admin/employees → frontend/src/pages/Admin/Employees.jsx
+/dashboard/admin/reports → frontend/src/pages/Admin/Reports.jsx
+/dashboard/admin/settings → frontend/src/pages/Admin/Settings.jsx
+Дополнительно:
+Все страницы под /dashboard/* отрисовываются внутри лэйаута AppLayout.
+Защита маршрутов осуществляется frontend/src/components/ProtectedRoute.jsx (публичные — через frontend/src/components/PublicOnlyRoute.jsx).
+Фоллбэк: любой неизвестный путь редиректит на /dashboard (если авторизован) или /login.

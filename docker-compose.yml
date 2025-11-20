@@ -1,0 +1,72 @@
+# Файл: docker-compose.yml (обновленный)
+
+version: "3.8"
+
+services:
+  # --- Frontend Service ---
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Передаем URL API в Dockerfile для сборки production-версии
+        VITE_API_URL: ${VITE_API_URL}
+    image: autopass/frontend:${BRANCH:-local}
+    container_name: autopass-frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - appnet
+
+  # --- Backend Service ---
+  backend:
+      build:
+        context: ./backend
+        dockerfile: Dockerfile
+      image: autopass/backend:${BRANCH:-local}
+      container_name: autopass-backend
+      environment:
+        SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+        SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+        SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+        SERVER_PORT: ${BACKEND_PORT}
+      ports:
+        - "${BACKEND_PORT}:${BACKEND_PORT}"
+      depends_on:
+        db:
+          condition: service_healthy
+      networks:
+        - appnet
+
+  # --- Database Service ---
+  db:
+    image: postgres:16
+    container_name: autopass-db
+    # Указываем, что переменные для БД берутся прямо из .env файла
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Скрипты инициализации БД
+      - ./db-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - appnet
+
+# --- Сеть и тома ---
+networks:
+  appnet: {}
+
+volumes:
+  pgdata: {}
